@@ -1,0 +1,70 @@
+[
+  {
+    "include": [
+      "modules/core.jsonc",
+      "modules/layout.jsonc",
+      "modules/hyprland.jsonc",
+      "modules/custom.jsonc",
+      "modules/custom-weather.jsonc",
+      "modules/system.jsonc",
+      "modules/custom-modules.jsonc"
+    ]
+  },
+  // === FLOATING BOTTOM BAR (Both sides) ===
+  {
+    "include": [
+      "modules/custom-modules.jsonc"
+    ],
+    "layer": "top",
+    "name": "bottom-bar",
+    "position": "bottom",
+    "height": 30,
+    "exclusive": false,
+    "passthrough": false,
+    "gtk-layer-shell": true,
+    "margin-bottom": 10,
+    "margin-left": 10,
+    "margin-right": 10,
+    "modules-left": [
+      "image#chatgpt",
+      "image#gemini",
+      "image#claude",
+      "image#kimi",
+      "image#qwen",
+      "image#deepseek",
+      "image#mistral",
+      "image#copilot",
+      "image#huggingface",
+      "image#blackbox"
+    ],
+    "modules-center": [],
+    "modules-right": [
+      "custom/stopwatch"
+    ],
+    "custom/quit": {
+      "format": "󰐥",
+      "on-click": "~/.config/waybar/scripts/power-menu.sh",
+      "tooltip-format": "Power Menu"
+    },
+    "custom/files": {
+      "format": "󰉋",
+      "on-click": "thunar",
+      "tooltip-format": "File Manager"
+    },
+    "custom/record": {
+      "format": "󰻃",
+      "on-click": "wf-recorder",
+      "tooltip-format": "Screen Record"
+    },
+    "custom/stopwatch": {
+      "format": "{}",
+      "return-type": "json",
+      "exec": "~/.config/waybar/scripts/stopwatch.sh status",
+      "on-click-right": "~/.config/waybar/scripts/stopwatch.sh toggle",
+      "on-click-middle": "~/.config/waybar/scripts/stopwatch.sh reset",
+      "interval": 1,
+      "signal": 10,
+      "tooltip": true
+    }
+  }
+]

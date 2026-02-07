@@ -1,0 +1,350 @@
+@import "../omarchy/current/theme/waybar.css";
+
+/* Colors */
+@define-color bg @background;
+@define-color fg @foreground;
+@define-color accent #ff9b71;
+@define-color dark #11111b;
+@define-color hover #313244;
+@define-color green #a6e3a1;
+@define-color yellow #f9e2af;
+@define-color red #f38ba8;
+@define-color blue #89b4fa;
+@define-color purple #cba6f7;
+@define-color teal #94e2d5;
+@define-color gray #6c7086;
+
+/* Global */
+* {
+  font-family: 'JetBrainsMono Nerd Font';
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+tooltip {
+  background: @dark;
+  border-radius: 8px;
+  border: 1px solid @accent;
+}
+
+tooltip label {
+  color: @fg;
+  padding: 2px 4px;
+  font-size: 9px;
+}
+
+window#waybar {
+  background-color: @dark;
+  margin: 0;
+}
+
+.modules-left,
+.modules-center,
+.modules-right {
+  background: transparent;
+  margin: 1px;
+}
+
+/* Workspaces */
+#workspaces {
+  background-color: transparent;
+  margin: 1px 2px;
+  padding: 0 2px;
+  opacity: 0.95;
+}
+
+#workspaces button {
+  color: @fg;
+  background: transparent;
+  margin: 2px 1px;
+  padding: 0 4px;
+  border-radius: 10px;
+  min-width: 16px;
+}
+
+#workspaces button:hover {
+  background-color: @hover;
+}
+
+#workspaces button.active {
+  background-color: @accent;
+  color: @dark;
+  min-width: 20px;
+}
+
+#workspaces button.urgent {
+  color: @red;
+  background-color: @yellow;
+}
+
+#workspaces button.empty {
+  color: @gray;
+}
+
+/* Common */
+#tray,
+#window,
+#mpris,
+#cpu,
+#memory,
+#network,
+#pulseaudio,
+#battery,
+#clock,
+#custom-omarchy,
+#custom-weather,
+#custom-git,
+#custom-docker,
+#custom-ollama,
+#custom-screenshot,
+#custom-colorpicker,
+#tray-expander {
+  background-color: transparent;
+  color: @fg;
+  margin: 1px;
+  padding: 1px 6px;
+  border-radius: 12px;
+  opacity: 0.95;
+}
+
+/* Hover */
+#cpu:hover,
+#memory:hover,
+#network:hover,
+#clock:hover,
+#mpris:hover,
+#custom-weather:hover,
+#custom-git:hover,
+#custom-docker:hover {
+  background-color: @hover;
+  color: @accent;
+}
+
+/* Special */
+#custom-omarchy {
+  color: @accent;
+}
+
+#clock {
+  font-weight: 700;
+  padding: 1px 8px;
+}
+
+#mpris {
+  font-size: 12px;
+}
+
+#custom-weather {
+  color: #89dceb;
+}
+
+/* Power */
+#custom-power {
+  color: @red;
+  padding: 1px 8px;
+  font-size: 11px;
+  background-color: @dark;
+  border-radius: 12px;
+  margin: 1px;
+  opacity: 0.95;
+}
+
+#custom-power:hover {
+  background-color: @red;
+  color: @dark;
+}
+
+/* Media Group */
+#group-media {
+  background-color: @dark;
+  border-radius: 12px;
+  margin: 1px 4px;
+  padding: 1px 1px;
+}
+
+#custom-media-prev,
+#custom-media-next {
+  color: @fg;
+  background-color: transparent;
+  padding: 0 8px;
+  margin: 1px;
+  opacity: 0.95;
+}
+
+#custom-media-prev:hover,
+#custom-media-next:hover {
+  color: @accent;
+}
+
+/* Music Autoplay Button */
+#custom-music-autoplay {
+  color: @green;
+  padding: 1px 10px;
+  background-color: transparent;
+  margin: 1px;
+  opacity: 0.95;
+  font-size: 14px;
+  transition: all 200ms ease;
+}
+
+#custom-music-autoplay:hover {
+  background-color: @hover;
+  color: @accent;
+}
+
+#custom-music-autoplay.stopped {
+  color: @green;
+}
+
+#custom-music-autoplay.playing {
+  color: @accent;
+}
+
+#custom-music-autoplay.paused {
+  color: @yellow;
+}
+
+/* Media Control Buttons */
+#custom-media-play {
+  color: @green;
+  padding: 1px 8px;
+  background-color: @dark;
+  border-radius: 12px;
+  margin: 1px;
+  opacity: 0.95;
+  font-size: 14px;
+}
+
+#custom-media-play.playing {
+  color: @accent;
+}
+
+#custom-media-play.paused {
+  color: @yellow;
+}
+
+#custom-media-title {
+  color: @fg;
+  padding: 1px 8px;
+  background-color: @dark;
+  border-radius: 12px;
+  margin: 1px;
+  opacity: 0.95;
+}
+
+#custom-media-repeat {
+  color: @gray;
+  padding: 1px 6px;
+  background-color: @dark;
+  border-radius: 12px;
+  margin: 1px;
+  opacity: 0.95;
+  font-size: 12px;
+}
+
+#custom-media-repeat:hover {
+  background-color: @hover;
+}
+
+#custom-media-repeat.track {
+  color: @teal;
+}
+
+#custom-media-repeat.playlist {
+  color: @blue;
+}
+
+#custom-media-repeat.off {
+  color: @gray;
+}
+
+#custom-media-shuffle {
+  color: @gray;
+  padding: 1px 6px;
+  background-color: @dark;
+  border-radius: 12px;
+  margin: 1px;
+  opacity: 0.95;
+  font-size: 12px;
+}
+
+#custom-media-shuffle:hover {
+  background-color: @hover;
+}
+
+#custom-media-shuffle.on {
+  color: @purple;
+}
+
+#custom-media-shuffle.off {
+  color: @gray;
+}
+
+/* Git */
+#custom-git {
+  padding: 1px 8px;
+  font-weight: 600;
+}
+
+#custom-git.clean {
+  color: @green;
+}
+
+#custom-git.staged {
+  color: @yellow;
+}
+
+#custom-git.modified {
+  color: #fab387;
+}
+
+#custom-git.untracked {
+  color: @red;
+}
+
+#custom-git.no-repo {
+  color: @gray;
+}
+
+/* Docker */
+#custom-docker.running {
+  color: @blue;
+}
+
+#custom-docker.idle,
+#custom-docker.stopped {
+  color: @gray;
+}
+
+/* Ollama */
+#custom-ollama.running {
+  color: @green;
+}
+
+#custom-ollama.stopped {
+  color: @gray;
+}
+
+/* Screenshot & Color Picker */
+#custom-screenshot {
+  color: @teal;
+}
+
+#custom-screenshot:hover {
+  background-color: @teal;
+  color: @dark;
+}
+
+#custom-colorpicker {
+  color: @purple;
+}
+
+#custom-colorpicker:hover {
+  background-color: @purple;
+  color: @dark;
+}

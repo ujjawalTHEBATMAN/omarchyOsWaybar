@@ -1,0 +1,146 @@
+{
+    // === MINIMAL MODULES ===
+    "custom/power": {
+        "format": "󰐥",
+        "on-click": "~/.config/waybar/scripts/power-menu.sh",
+        "tooltip-format": "Power"
+    },
+    // === MEDIA GROUP ===
+    "group/media": {
+        "orientation": "horizontal",
+        "modules": [
+            "custom/media-prev",
+            "custom/music-autoplay",
+            "custom/media-next"
+        ]
+    },
+    "custom/media-prev": {
+        "format": "⏮",
+        "return-type": "json",
+        "exec": "~/.config/waybar/scripts/music-autoplay.sh status-prev",
+        "on-click": "~/.config/waybar/scripts/music-autoplay.sh prev",
+        "signal": 8,
+        "tooltip": true
+    },
+    "custom/media-next": {
+        "format": "⏭",
+        "return-type": "json",
+        "exec": "~/.config/waybar/scripts/music-autoplay.sh status-next",
+        "on-click": "~/.config/waybar/scripts/music-autoplay.sh next",
+        "signal": 8,
+        "tooltip": true
+    },
+    "custom/music-autoplay": {
+        "format": "{icon} {}",
+        "return-type": "json",
+        "exec": "~/.config/waybar/scripts/music-autoplay.sh status",
+        "on-click": "~/.config/waybar/scripts/music-autoplay.sh toggle",
+        "on-click-right": "~/.config/waybar/scripts/music-autoplay.sh shuffle",
+        "on-click-middle": "~/.config/waybar/scripts/music-autoplay.sh stop",
+        "signal": 8,
+        "tooltip": true
+    },
+    "custom/git": {
+        "exec": "~/.config/waybar/scripts/git-status.sh",
+        "return-type": "json",
+        "interval": 5,
+        "on-click": "ghostty --class=lazygit -e lazygit",
+        "tooltip": true
+    },
+    "custom/docker": {
+        "exec": "~/.config/waybar/scripts/docker-status.sh",
+        "return-type": "json",
+        "interval": 15,
+        "on-click": "ghostty --class=lazydocker -e lazydocker",
+        "tooltip": true
+    },
+    "custom/ollama": {
+        "exec": "~/.config/waybar/scripts/ollama-status.sh",
+        "return-type": "json",
+        "interval": 10,
+        "on-click": "ghostty -e ollama run llama3.2",
+        "tooltip": true
+    },
+    "custom/screenshot": {
+        "format": "󰹑",
+        "on-click": "~/.config/waybar/scripts/screenshot.sh area",
+        "on-click-right": "~/.config/waybar/scripts/screenshot.sh full",
+        "tooltip-format": "Screenshot"
+    },
+    "custom/colorpicker": {
+        "format": "󰏘",
+        "on-click": "~/.config/waybar/scripts/color-picker.sh",
+        "tooltip-format": "Color Picker"
+    },
+    // === AI LAUNCHERS ===
+    "image#chatgpt": {
+        "path": "/home/ujjawal/.config/waybar/ai images/chatgpt.svg",
+        "size": 22,
+        "on-click": "omarchy-launch-webapp \"https://chatgpt.com\"",
+        "tooltip": true,
+        "tooltip-format": "ChatGPT"
+    },
+    "image#gemini": {
+        "path": "/home/ujjawal/.config/waybar/ai images/gemini.svg",
+        "size": 22,
+        "on-click": "omarchy-launch-webapp \"https://gemini.google.com\"",
+        "tooltip": true,
+        "tooltip-format": "Gemini"
+    },
+    "image#claude": {
+        "path": "/home/ujjawal/.config/waybar/ai images/claude-ai.svg",
+        "size": 22,
+        "on-click": "omarchy-launch-webapp \"https://claude.ai\"",
+        "tooltip": true,
+        "tooltip-format": "Claude"
+    },
+    "image#kimi": {
+        "path": "/home/ujjawal/.config/waybar/ai images/kimi-ai.svg",
+        "size": 22,
+        "on-click": "omarchy-launch-webapp \"https://kimi.moonshot.cn/\"",
+        "tooltip": true,
+        "tooltip-format": "Kimi AI"
+    },
+    "image#qwen": {
+        "path": "/home/ujjawal/.config/waybar/ai images/qwen.svg",
+        "size": 22,
+        "on-click": "omarchy-launch-webapp \"https://chat.qwen.ai\"",
+        "tooltip": true,
+        "tooltip-format": "Qwen AI"
+    },
+    "image#deepseek": {
+        "path": "/home/ujjawal/.config/waybar/ai images/deepseek.svg",
+        "size": 22,
+        "on-click": "omarchy-launch-webapp \"https://chat.deepseek.com\"",
+        "tooltip": true,
+        "tooltip-format": "DeepSeek R1"
+    },
+    "image#mistral": {
+        "path": "/home/ujjawal/.config/waybar/ai images/mistral.svg",
+        "size": 22,
+        "on-click": "omarchy-launch-webapp \"https://chat.mistral.ai\"",
+        "tooltip": true,
+        "tooltip-format": "Mistral Le Chat"
+    },
+    "image#copilot": {
+        "path": "/home/ujjawal/.config/waybar/ai images/copilot.svg",
+        "size": 22,
+        "on-click": "omarchy-launch-webapp \"https://copilot.microsoft.com\"",
+        "tooltip": true,
+        "tooltip-format": "Microsoft Copilot"
+    },
+    "image#huggingface": {
+        "path": "/home/ujjawal/.config/waybar/ai images/huggingface.svg",
+        "size": 22,
+        "on-click": "omarchy-launch-webapp \"https://huggingface.co/chat\"",
+        "tooltip": true,
+        "tooltip-format": "HuggingChat"
+    },
+    "image#blackbox": {
+        "path": "/home/ujjawal/.config/waybar/ai images/blackbox.svg",
+        "size": 22,
+        "on-click": "omarchy-launch-webapp \"https://www.blackbox.ai\"",
+        "tooltip": true,
+        "tooltip-format": "Blackbox AI"
+    }
+}

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <defs>
+    <linearGradient id="copilotGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6264A7"/>
+      <stop offset="50%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#22C55E"/>
+    </linearGradient>
+  </defs>
+  <circle cx="12" cy="12" r="10" fill="url(#copilotGrad)"/>
+  <path d="M7 12c0-2.8 2.2-5 5-5s5 2.2 5 5c0 1.4-.6 2.7-1.5 3.6l-1.2-1.2c.6-.6 1-1.4 1-2.4 0-1.9-1.6-3.5-3.5-3.5s-3.5 1.6-3.5 3.5h2L8 14.3 5.5 12H7z" fill="white"/>
+</svg>
