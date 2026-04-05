@@ -1,46 +1,34 @@
 {
+  // === GLOBAL SETTINGS ===
   "reload_style_on_change": true,
   "layer": "top",
   "position": "top",
   "spacing": 0,
   "height": 26,
+  
+  // === MODULE LAYOUT ===
   "modules-left": ["custom/omarchy", "hyprland/workspaces"],
   "modules-center": ["clock", "custom/update", "custom/voxtype", "custom/screenrecording-indicator", "custom/idle-indicator", "custom/notification-silencing-indicator"],
-  "modules-right": [
-    "group/tray-expander",
-    "bluetooth",
-    "network",
-    "pulseaudio",
-    "cpu",
-    "battery"
-  ],
+  "modules-right": ["group/tray-expander", "bluetooth", "network", "pulseaudio", "cpu", "battery"],
+  
+  // === WORKSPACES ===
   "hyprland/workspaces": {
     "on-click": "activate",
     "format": "{icon}",
     "format-icons": {
       "default": "",
-      "1": "1",
-      "2": "2",
-      "3": "3",
-      "4": "4",
-      "5": "5",
-      "6": "6",
-      "7": "7",
-      "8": "8",
-      "9": "9",
-      "10": "0",
+      "1": "1", "2": "2", "3": "3", "4": "4", "5": "5",
+      "6": "6", "7": "7", "8": "8", "9": "9", "10": "0",
       "active": "󱓻"
     },
     "persistent-workspaces": {
-      "1": [],
-      "2": [],
-      "3": [],
-      "4": [],
-      "5": []
+      "1": [], "2": [], "3": [], "4": [], "5": []
     }
   },
+  
+  // === CUSTOM MODULES ===
   "custom/omarchy": {
-    "format": "<span font='omarchy'>\ue900</span>",
+    "format": "<span font='omarchy'></span>",
     "on-click": "omarchy-menu",
     "on-click-right": "xdg-terminal-exec",
     "tooltip-format": "Omarchy Menu\n\nSuper + Alt + Space"
@@ -53,73 +41,120 @@
     "signal": 7,
     "interval": 21600
   },
-
+  
+  // === SYSTEM INFO ===
   "cpu": {
     "interval": 5,
-    "format": "󰍛",
+    "format": "{usage}% 󰍛",
     "on-click": "omarchy-launch-or-focus-tui btop",
-    "on-click-right": "alacritty"
+    "on-click-right": "alacritty",
+    "tooltip": true,
+    "tooltip-format": "CPU Usage: {usage}%\nFrequency: {frequency} GHz\nLoad Average: {load}"
   },
+  
+  // === CLOCK - 12 HOUR FORMAT ===
   "clock": {
-    "format": "{:L%A %H:%M}",
-    "format-alt": "{:L%d %B W%V %Y}",
-    "tooltip": false,
-    "on-click-right": "omarchy-launch-floating-terminal-with-presentation omarchy-tz-select"
+    "format": "{:%a %d/%m %I:%M %p}",
+    "format-alt": "{:%A %d %B %Y W%V}",
+    "tooltip": true,
+    "tooltip-format": "{calendar}\n{tz_list}",
+    "on-click-right": "omarchy-launch-floating-terminal-with-presentation omarchy-tz-select",
+    "calendar": {
+      "mode": "month",
+      "mode-mon-col": 3,
+      "weeks-pos": "right",
+      "on-scroll": 1,
+      "on-click-right": "shift",
+      "format": {
+        "months": "<span color='#ffeb95'><b>{}</b></span>",
+        "days": "<span color='#ecc6d9'>{}</span>",
+        "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
+        "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+      }
+    },
+    "actions": {
+      "on-click-right": "shift",
+      "on-scroll-up": "shift_up",
+      "on-scroll-down": "shift_down"
+    },
+    "timezones": ["Local", "UTC"]
   },
+  
+  // === NETWORK ===
   "network": {
     "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
     "format": "{icon}",
-    "format-wifi": "{icon}",
-    "format-ethernet": "󰀂",
-    "format-disconnected": "󰤮",
-    "tooltip-format-wifi": "{essid} ({frequency} GHz)",
-    "tooltip-format-ethernet": "Connected",
-    "tooltip-format-disconnected": "Disconnected",
+    "format-wifi": "{icon} {signalStrength}%",
+    "format-ethernet": "󰀂 {ifname}",
+    "format-disconnected": "󰤮 Offline",
+    "tooltip-format-wifi": "WiFi Network\nESSID: {essid}\nFrequency: {frequency} GHz\nSignal: {signalStrength}%\nIP: {ipaddr}/{cidr}",
+    "tooltip-format-ethernet": "Ethernet\nInterface: {ifname}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}",
+    "tooltip-format-disconnected": "Network Disconnected",
     "interval": 3,
     "spacing": 1,
-    "on-click": "omarchy-launch-wifi"
+    "on-click": "omarchy-launch-wifi",
+    "on-click-right": "nm-connection-editor"
   },
+  
+  // === BATTERY ===
   "battery": {
     "format": "{capacity}% {icon}",
-    "format-discharging": "{icon}",
-    "format-charging": "{icon}",
-    "format-plugged": "",
+    "format-discharging": "{capacity}% {icon}",
+    "format-charging": "{capacity}% {icon}",
+    "format-plugged": " Full",
     "format-icons": {
       "charging": ["󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"],
       "default": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
     },
-    "format-full": "󰂅",
-    "tooltip-format-discharging": "{power:>1.0f}W↓ {capacity}%",
-    "tooltip-format-charging": "{power:>1.0f}W↑ {capacity}%",
+    "format-full": "󰂅 100%",
+    "tooltip-format-discharging": "Battery Discharging\nCapacity: {capacity}%\nPower Draw: {power:>1.0f}W\nTime Remaining: {time}",
+    "tooltip-format-charging": "Battery Charging\nCapacity: {capacity}%\nPower Input: {power:>1.0f}W\nTime to Full: {time}",
     "interval": 5,
     "on-click": "omarchy-menu power",
+    "on-click-right": "gnome-power-statistics",
     "states": {
       "warning": 20,
       "critical": 10
     }
   },
+  
+  // === BLUETOOTH ===
   "bluetooth": {
-    "format": "",
+    "format": "{icon}",
     "format-off": "󰂲",
     "format-disabled": "󰂲",
-    "format-connected": "󰂱",
+    "format-connected": " {num_connections}",
     "format-no-controller": "",
-    "tooltip-format": "Devices connected: {num_connections}",
-    "on-click": "omarchy-launch-bluetooth"
+    "tooltip-format": "Bluetooth\nStatus: {status}\nDevices connected: {num_connections}\n{device_aliases}",
+    "on-click": "omarchy-launch-bluetooth",
+    "on-click-right": "blueman-manager",
+    "format-icons": {
+      "connected": "",
+      "default": ""
+    }
   },
+  
+  // === AUDIO ===
   "pulseaudio": {
-    "format": "{icon}",
+    "format": "{icon}  {volume}%",
     "on-click": "omarchy-launch-audio",
     "on-click-right": "pamixer -t",
-    "tooltip-format": "Playing at {volume}%",
+    "tooltip-format": "Audio\nDevice: {node_name}\nVolume: {volume}%\n{node_description}",
     "scroll-step": 5,
-    "format-muted": "",
+    "format-muted": " Muted",
     "format-icons": {
       "headphone": "",
       "headset": "",
+      "hands-free": "",
+      "portable": "",
+      "car": "",
       "default": ["", "", ""]
-    }
+    },
+    "on-scroll-up": "pamixer -i 5",
+    "on-scroll-down": "pamixer -d 5"
   },
+  
+  // === TRAY ===
   "group/tray-expander": {
     "orientation": "inherit",
     "drawer": {
@@ -136,6 +171,8 @@
     "on-scroll-left": "",
     "on-scroll-right": ""
   },
+  
+  // === INDICATORS ===
   "custom/screenrecording-indicator": {
     "on-click": "omarchy-cmd-screenrecord",
     "exec": "$OMARCHY_PATH/default/waybar/indicators/screen-recording.sh",
@@ -154,6 +191,8 @@
     "signal": 10,
     "return-type": "json"
   },
+  
+  // === VOXTYPE ===
   "custom/voxtype": {
     "exec": "omarchy-voxtype-status",
     "return-type": "json",
@@ -167,6 +206,8 @@
     "on-click-right": "omarchy-voxtype-config",
     "on-click": "omarchy-voxtype-model"
   },
+  
+  // === TRAY SETTINGS ===
   "tray": {
     "icon-size": 12,
     "spacing": 17

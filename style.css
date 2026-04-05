@@ -3,7 +3,6 @@
 * {
   background-color: @background;
   color: @foreground;
-
   border: none;
   border-radius: 0;
   min-height: 0;
@@ -11,14 +10,17 @@
   font-size: 12px;
 }
 
+/* === LEFT MODULES === */
 .modules-left {
   margin-left: 8px;
 }
 
+/* === RIGHT MODULES === */
 .modules-right {
   margin-right: 8px;
 }
 
+/* === WORKSPACES === */
 #workspaces button {
   all: initial;
   padding: 0 6px;
@@ -30,6 +32,11 @@
   opacity: 0.5;
 }
 
+#workspaces button.active {
+  color: @accent;
+}
+
+/* === SYSTEM MODULES === */
 #cpu,
 #battery,
 #pulseaudio,
@@ -39,6 +46,7 @@
   margin: 0 7.5px;
 }
 
+/* === TRAY === */
 #tray {
   margin-right: 16px;
 }
@@ -55,22 +63,37 @@
   margin-right: 18px;
 }
 
+/* === TOOLTIPS === */
 tooltip {
   padding: 2px;
+  border-radius: 4px;
 }
 
+tooltip label {
+  font-size: 11px;
+}
+
+/* === UPDATE INDICATOR === */
 #custom-update {
   font-size: 10px;
 }
 
+/* === CLOCK - 12 HOUR FORMAT === */
 #clock {
   margin-left: 8.75px;
+  font-weight: bold;
 }
 
+#clock:hover {
+  color: @accent;
+}
+
+/* === HIDDEN MODULES === */
 .hidden {
   opacity: 0;
 }
 
+/* === INDICATORS === */
 #custom-screenrecording-indicator,
 #custom-idle-indicator,
 #custom-notification-silencing-indicator {
@@ -90,6 +113,7 @@ tooltip {
   color: #a55555;
 }
 
+/* === VOXTYPE === */
 #custom-voxtype {
   min-width: 12px;
   margin: 0 0 0 7.5px;
@@ -97,4 +121,45 @@ tooltip {
 
 #custom-voxtype.recording {
   color: #a55555;
+}
+
+/* === BATTERY STATES === */
+#battery.warning {
+  color: #f39c12;
+}
+
+#battery.critical {
+  color: #e74c3c;
+  animation: blink 1s linear infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* === NETWORK STATES === */
+#network.disconnected {
+  color: #e74c3c;
+}
+
+/* === BLUETOOTH STATES === */
+#bluetooth.off,
+#bluetooth.disabled {
+  color: #7f8c8d;
+}
+
+/* === AUDIO MUTED === */
+#pulseaudio.muted {
+  color: #7f8c8d;
+}
+
+/* === HOVER EFFECTS === */
+#cpu:hover,
+#battery:hover,
+#pulseaudio:hover,
+#network:hover,
+#bluetooth:hover {
+  color: @accent;
+  cursor: pointer;
 }

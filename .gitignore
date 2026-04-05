@@ -1,0 +1,5 @@
+```gitignore
+# Configuration and style files
+config.jsonc
+style.css
+```
