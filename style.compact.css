@@ -1,0 +1,40 @@
+/* Compact mode overrides */
+* {
+  font-size: 11px;
+}
+
+#workspaces {
+  margin: 3px 3px;
+  padding: 3px 5px;
+}
+
+#workspaces button {
+  padding: 0 5px;
+}
+
+#clock {
+  padding: 1px 6px;
+  font-size: 11px;
+}
+
+#custom-music-autoplay {
+  font-size: 12px;
+  padding: 1px 8px;
+}
+
+window#waybar.bottom-bar .modules-left,
+window#waybar.bottom-bar .modules-right {
+  padding: 1px 6px;
+  margin: 0 4px;
+}
+
+window#waybar.bottom-bar button {
+  min-width: 20px;
+  min-height: 20px;
+  margin: 0 2px;
+}
+
+window#waybar.bottom-bar #custom-stopwatch {
+  font-size: 11px;
+  padding: 0 3px;
+}

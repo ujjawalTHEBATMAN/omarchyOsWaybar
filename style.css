@@ -1,483 +1,100 @@
 @import "../omarchy/current/theme/waybar.css";
 
-/* Colors */
-@define-color bg @background;
-@define-color fg @foreground;
-@define-color accent #ff9b71;
-@define-color dark #11111b;
-@define-color hover #313244;
-@define-color green #a6e3a1;
-@define-color yellow #f9e2af;
-@define-color red #f38ba8;
-@define-color blue #89b4fa;
-@define-color purple #cba6f7;
-@define-color teal #94e2d5;
-@define-color gray #6c7086;
-
-/* Global */
 * {
-  font-family: 'JetBrainsMono Nerd Font';
-  font-size: 12px;
-  font-weight: 600;
+  background-color: @background;
+  color: @foreground;
+
   border: none;
-  border-radius: 12px;
+  border-radius: 0;
   min-height: 0;
-  padding: 0;
-  margin: 0;
+  font-family: 'Fira Code';
+  font-size: 12px;
 }
 
-tooltip {
-  background: @dark;
-  border-radius: 8px;
-  border: 1px solid @accent;
+.modules-left {
+  margin-left: 8px;
 }
 
-tooltip label {
-  color: @fg;
-  padding: 2px 4px;
-  font-size: 9px;
-}
-
-window#waybar {
-  background-color: @dark;
-  margin: 0;
-}
-
-.modules-left,
-.modules-center,
 .modules-right {
-  background: transparent;
-  margin: 1px;
-}
-
-/* Workspaces */
-#workspaces {
-  background-color: @hover;
-  margin: 4px 4px;
-  padding: 4px 6px;
-  border-radius: 16px;
-  opacity: 1;
+  margin-right: 8px;
 }
 
 #workspaces button {
-  color: @fg;
-  background: transparent;
-  margin: 0px 2px;
+  all: initial;
   padding: 0 6px;
-  border-radius: 12px;
-  min-width: 16px;
-}
-
-#workspaces button:hover {
-  background-color: @hover;
-}
-
-#workspaces button.active {
-  background-color: @accent;
-  color: @dark;
-  min-width: 24px;
-  transition: all 0.3s ease;
-}
-
-#workspaces button.urgent {
-  color: @red;
-  background-color: @yellow;
+  margin: 0 1.5px;
+  min-width: 9px;
 }
 
 #workspaces button.empty {
-  color: @gray;
+  opacity: 0.5;
 }
 
-/* Common */
-#tray,
-#window,
-#mpris,
 #cpu,
-#memory,
-#network,
-#pulseaudio,
 #battery,
-#clock,
-#custom-weather,
-#custom-calendar,
-#custom-update,
-#custom-updatespacman,
-#custom-cava,
-#custom-netspeed,
-#custom-git,
-#custom-docker,
-#custom-ollama,
-#custom-screenshot,
-#custom-colorpicker,
-#tray-expander,
-#temperature,
-#disk,
-#idle_inhibitor {
-  background-color: transparent;
-  color: @fg;
-  margin: 1px;
-  padding: 1px 6px;
-  border-radius: 12px;
-  opacity: 0.95;
+#pulseaudio,
+#custom-omarchy,
+#custom-update {
+  min-width: 12px;
+  margin: 0 7.5px;
 }
 
-/* Hover */
-#cpu:hover,
-#memory:hover,
-#network:hover,
-#clock:hover,
-#mpris:hover,
-#custom-weather:hover,
-#custom-calendar:hover,
-#custom-update:hover,
-#custom-updatespacman:hover,
-#custom-cava:hover,
-#custom-netspeed:hover,
-#custom-git:hover,
-#custom-docker:hover,
-#temperature:hover,
-#disk:hover,
-#idle_inhibitor:hover {
-  background-color: @hover;
-  color: @accent;
+#tray {
+  margin-right: 16px;
 }
 
-/* Special */
-#custom-omarchy {
-  color: @accent;
+#bluetooth {
+  margin-right: 17px;
 }
 
-#cpu {
-  color: @blue;
+#network {
+  margin-right: 13px;
 }
 
-#memory {
-  color: @purple;
+#custom-expand-icon {
+  margin-right: 18px;
+}
+
+tooltip {
+  padding: 2px;
+}
+
+#custom-update {
+  font-size: 10px;
 }
 
 #clock {
-  color: @teal;
-  font-weight: 700;
-  padding: 1px 8px;
+  margin-left: 8.75px;
 }
 
-#mpris {
-  font-size: 12px;
+.hidden {
+  opacity: 0;
 }
 
-#custom-weather {
-  color: #89dceb;
+#custom-screenrecording-indicator,
+#custom-idle-indicator,
+#custom-notification-silencing-indicator {
+  min-width: 12px;
+  margin-left: 5px;
+  margin-right: 0;
+  font-size: 10px;
+  padding-bottom: 1px;
 }
 
-#custom-calendar {
-  color: @teal;
+#custom-screenrecording-indicator.active {
+  color: #a55555;
 }
 
-#custom-update,
-#custom-updatespacman {
-  color: @yellow;
+#custom-idle-indicator.active,
+#custom-notification-silencing-indicator.active {
+  color: #a55555;
 }
 
-#custom-cava {
-  color: @accent;
+#custom-voxtype {
+  min-width: 12px;
+  margin: 0 0 0 7.5px;
 }
 
-#custom-netspeed {
-  color: @green;
-}
-
-#temperature {
-  color: @red;
-}
-
-#disk {
-  color: @yellow;
-}
-
-#idle_inhibitor {
-  color: @purple;
-}
-
-/* Power */
-#custom-power {
-  color: @red;
-  padding: 1px 8px;
-  font-size: 11px;
-  background-color: @dark;
-  border-radius: 12px;
-  margin: 1px;
-  opacity: 0.95;
-}
-
-#custom-power:hover {
-  background-color: @red;
-  color: @dark;
-}
-
-/* Media Group */
-#group-media {
-  background-color: @dark;
-  border-radius: 12px;
-  margin: 1px 4px;
-  padding: 1px 1px;
-}
-
-#custom-media-prev,
-#custom-media-next {
-  color: @fg;
-  background-color: transparent;
-  padding: 0 8px;
-  margin: 1px;
-  opacity: 0.95;
-}
-
-#custom-media-prev:hover,
-#custom-media-next:hover {
-  color: @accent;
-}
-
-/* Music Autoplay Button */
-#custom-music-autoplay {
-  color: @green;
-  padding: 1px 10px;
-  background-color: transparent;
-  margin: 1px;
-  opacity: 0.95;
-  font-size: 14px;
-  transition: all 200ms ease;
-}
-
-#custom-music-autoplay:hover {
-  background-color: @hover;
-  color: @accent;
-}
-
-#custom-music-autoplay.stopped {
-  color: @green;
-}
-
-#custom-music-autoplay.playing {
-  color: @accent;
-}
-
-#custom-music-autoplay.paused {
-  color: @yellow;
-}
-
-
-/* Git */
-#custom-git {
-  padding: 1px 8px;
-  font-weight: 600;
-}
-
-#custom-git.clean {
-  color: @green;
-}
-
-#custom-git.staged {
-  color: @yellow;
-}
-
-#custom-git.modified {
-  color: #fab387;
-}
-
-#custom-git.untracked {
-  color: @red;
-}
-
-#custom-git.no-repo {
-  color: @gray;
-}
-
-/* Docker */
-#custom-docker.running {
-  color: @blue;
-}
-
-#custom-docker.idle,
-#custom-docker.stopped {
-  color: @gray;
-}
-
-/* Ollama */
-#custom-ollama.running {
-  color: @green;
-}
-
-#custom-ollama.stopped {
-  color: @gray;
-}
-
-/* Screenshot & Color Picker */
-#custom-screenshot {
-  color: @teal;
-}
-
-#custom-screenshot:hover {
-  background-color: @teal;
-  color: @dark;
-}
-
-#custom-colorpicker {
-  color: @purple;
-}
-
-#custom-colorpicker:hover {
-  background-color: @purple;
-  color: @dark;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   FLOATING BOTTOM BAR - Dynamic Blur & Dock Design
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Main Bottom Bar - Transparent */
-window#waybar.bottom-bar {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-
-/* Common Container Styles - Default State (Visible/Opaque) */
-/* Common Container Styles - Default State (Visible/Opaque) */
-window#waybar.bottom-bar .modules-left,
-window#waybar.bottom-bar .modules-right {
-  background: rgba(20, 20, 30, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 99px;
-  padding: 1px 5px;
-  margin: 0 4px;
-  opacity: 0.9;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-/* Dock-like focus */
-window#waybar.bottom-bar .modules-left:hover,
-window#waybar.bottom-bar .modules-right:hover {
-  background: rgba(30, 30, 46, 0.95);
-  border: 1px solid rgba(137, 180, 250, 0.5);
-  padding: 1px 12px;
-  opacity: 1;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   MODULES & ICONS
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* General Button Reset */
-window#waybar.bottom-bar button {
-  background: transparent;
-  border: none;
-  border-radius: 50%;
-  /* Circles for icons */
-  min-width: 24px;
-  min-height: 24px;
-  margin: 0 4px;
-  transition: all 0.2s ease;
-  font-size: 14px;
-  color: #cdd6f4;
-}
-
-window#waybar.bottom-bar button:hover {
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  color: #fff;
-}
-
-/* --- Left Group: System Actions --- */
-window#waybar.bottom-bar #custom-quit {
-  color: #f38ba8;
-}
-
-/* Red */
-window#waybar.bottom-bar #custom-files {
-  color: #89b4fa;
-}
-
-/* Blue */
-window#waybar.bottom-bar #custom-record {
-  color: #f5c2e7;
-  margin-right: 12px;
-}
-
-/* Pink */
-
-/* --- Center Group: AI Launchers --- */
-/* Consolidated in the block below */
-
-window#waybar.bottom-bar #image-chatgpt {
-  color: #a6e3a1;
-  /* Green */
-  font-size: 20px;
-}
-
-window#waybar.bottom-bar #image-gemini {
-  color: #89dceb;
-  /* Sky */
-  font-size: 20px;
-}
-
-window#waybar.bottom-bar #image-claude {
-  color: #fab387;
-  /* Orange */
-  font-size: 20px;
-}
-
-window#waybar.bottom-bar #image-chatgpt,
-window#waybar.bottom-bar #image-claude,
-window#waybar.bottom-bar #image-gemini,
-window#waybar.bottom-bar #image-kimi,
-window#waybar.bottom-bar #image-qwen,
-window#waybar.bottom-bar #image-deepseek,
-window#waybar.bottom-bar #image-mistral,
-window#waybar.bottom-bar #image-copilot,
-window#waybar.bottom-bar #image-huggingface,
-window#waybar.bottom-bar #image-blackbox {
-  padding: 0 2px;
-  margin: 0 3px;
-  min-width: 20px;
-  min-height: 20px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  -gtk-icon-transform: scale(1);
-}
-
-window#waybar.bottom-bar #image-chatgpt:hover,
-window#waybar.bottom-bar #image-claude:hover,
-window#waybar.bottom-bar #image-gemini:hover,
-window#waybar.bottom-bar #image-kimi:hover,
-window#waybar.bottom-bar #image-qwen:hover,
-window#waybar.bottom-bar #image-deepseek:hover,
-window#waybar.bottom-bar #image-mistral:hover,
-window#waybar.bottom-bar #image-copilot:hover,
-window#waybar.bottom-bar #image-huggingface:hover,
-window#waybar.bottom-bar #image-blackbox:hover {
-  background: rgba(255, 255, 255, 0.12);
-  -gtk-icon-transform: scale(1.2);
-}
-
-/* --- Right Group: Stopwatch --- */
-/* Override default button style for text-based module */
-window#waybar.bottom-bar #custom-stopwatch {
-  background: transparent;
-  color: #bac2de;
-  font-family: 'JetBrainsMono Nerd Font', monospace;
-  font-weight: 700;
-  font-size: 13px;
-  padding: 0 6px;
-  border-radius: 8px;
-  min-width: unset;
-}
-
-window#waybar.bottom-bar #custom-stopwatch.running {
-  color: #a6e3a1;
-}
-
-window#waybar.bottom-bar #custom-stopwatch:hover {
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+#custom-voxtype.recording {
+  color: #a55555;
 }

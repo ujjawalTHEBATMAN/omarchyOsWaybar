@@ -1,0 +1,509 @@
+@import "../omarchy/current/theme/waybar.css";
+
+* {
+  background-color: transparent;
+  color: #ffffff;
+  border: none;
+  border-radius: 0;
+  min-height: 0;
+  font-family: 'JetBrainsMono Nerd Font';
+  font-size: 12px;
+}
+
+/* ── Floating pill bar (Glassmorphism) ─────────────────── */
+window#waybar {
+  background: rgba(18, 18, 22, 0.85);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.7);
+}
+
+/* ── Section spacing ───────────────────────────────────── */
+.modules-left {
+  margin-left: 12px;
+}
+
+.modules-center {
+  margin: 0 10px;
+}
+
+.modules-right {
+  margin-right: 12px;
+}
+
+/* ── Workspaces (Left) ─────────────────────────────────── */
+#workspaces {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+#workspaces button {
+  all: initial;
+  padding: 0 6px;
+  margin: 0 1.5px;
+  min-width: 9px;
+  color: #ffffff;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+#workspaces button.active {
+  color: #1a1b26;
+  background: #a8c7fa;
+  box-shadow: 0 0 10px rgba(168, 199, 250, 0.4);
+  font-weight: 800;
+}
+
+#workspaces button.urgent {
+  color: #1a1b26;
+  background: #f28b82;
+  box-shadow: 0 0 10px rgba(242, 139, 130, 0.4);
+}
+
+#workspaces button.empty {
+  opacity: 0.25;
+}
+
+#workspaces button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+}
+
+/* ── Window title (Left) ───────────────────────────────── */
+#window {
+  margin-left: 8px;
+  opacity: 0.85;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* ── Clock & Timer (Center) ────────────────────────────── */
+#clock {
+  margin-left: 6px;
+  margin-right: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e8eaed;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.02);
+  transition: all 0.3s ease;
+}
+
+#clock:hover {
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+#custom-study-timer {
+  margin: 0 6px;
+  font-weight: bold;
+  color: #ffcc66;
+  background: rgba(255, 204, 102, 0.1);
+  padding: 0 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+#custom-study-timer:hover {
+  background: rgba(255, 204, 102, 0.2);
+}
+
+#custom-leetcode-countdown {
+  margin: 0 6px;
+  font-weight: bold;
+  color: #ffa116;
+  background: rgba(255, 161, 22, 0.1);
+  padding: 0 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+#custom-leetcode-countdown:hover {
+  background: rgba(255, 161, 22, 0.2);
+}
+
+/* ── MPRIS Track Display ───────────────────────────────── */
+#mpris {
+  margin: 0 8px;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 8px;
+  background: rgba(138, 180, 248, 0.08);
+  color: #8ab4f8;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(138, 180, 248, 0.06);
+}
+
+#mpris:hover {
+  background: rgba(138, 180, 248, 0.16);
+  border-color: rgba(138, 180, 248, 0.2);
+  text-shadow: 0 0 8px rgba(138, 180, 248, 0.3);
+}
+
+#mpris.playing {
+  color: #81c995;
+  background: rgba(129, 201, 149, 0.08);
+  border-color: rgba(129, 201, 149, 0.08);
+}
+
+#mpris.playing:hover {
+  background: rgba(129, 201, 149, 0.16);
+  border-color: rgba(129, 201, 149, 0.2);
+  text-shadow: 0 0 8px rgba(129, 201, 149, 0.3);
+}
+
+#mpris.paused {
+  color: #fdd663;
+  background: rgba(253, 214, 99, 0.06);
+  border-color: rgba(253, 214, 99, 0.06);
+  opacity: 0.85;
+}
+
+#mpris.paused:hover {
+  opacity: 1;
+  background: rgba(253, 214, 99, 0.12);
+}
+
+/* ── Media Control Group (Glassmorphism Pill) ─────────── */
+#custom-media-prev,
+#custom-media-play,
+#custom-media-next,
+#custom-media-stop {
+  font-size: 13px;
+  min-width: 20px;
+  padding: 0 4px;
+  margin: 0 1px;
+  color: rgba(255, 255, 255, 0.75);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 6px;
+}
+
+#custom-media-prev:hover,
+#custom-media-play:hover,
+#custom-media-next:hover,
+#custom-media-stop:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+}
+
+#custom-media-prev:active,
+#custom-media-play:active,
+#custom-media-next:active,
+#custom-media-stop:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Play button glow states */
+#custom-media-play {
+  font-size: 15px;
+  min-width: 24px;
+  padding: 0 6px;
+  margin: 0 2px;
+}
+
+#custom-media-play.playing {
+  color: #81c995;
+  text-shadow: 0 0 6px rgba(129, 201, 149, 0.4);
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+#custom-media-play.paused {
+  color: #fdd663;
+}
+
+#custom-media-play.stopped {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Stop button */
+#custom-media-stop {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+#custom-media-stop:hover {
+  color: #f28b82;
+  background: rgba(242, 139, 130, 0.1);
+}
+
+/* Subtle pulse animation for active playback */
+@keyframes pulse-glow {
+  0% {
+    text-shadow: 0 0 4px rgba(129, 201, 149, 0.2);
+  }
+
+  50% {
+    text-shadow: 0 0 10px rgba(129, 201, 149, 0.5);
+  }
+
+  100% {
+    text-shadow: 0 0 4px rgba(129, 201, 149, 0.2);
+  }
+}
+
+/* ── System Modules (Right) GROUPED PILLS ───────────────── */
+#cpu,
+#memory,
+#temperature,
+#battery,
+#pulseaudio,
+#network,
+#bluetooth,
+#custom-omarchy,
+#custom-update {
+  font-weight: 600;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0 10px;
+  margin: 0 4px;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+#cpu:hover,
+#memory:hover,
+#temperature:hover,
+#battery:hover,
+#pulseaudio:hover,
+#network:hover,
+#bluetooth:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+}
+
+/* ── Specific System Colors ────────────────────────────── */
+#cpu {
+  color: #f28b82;
+}
+
+#memory {
+  color: #ccb9f7;
+}
+
+#temperature {
+  color: #ffb4a2;
+}
+
+#pulseaudio {
+  color: #a8c7fa;
+}
+
+#network {
+  color: #81c995;
+}
+
+#bluetooth {
+  color: #8ab4f8;
+}
+
+#battery {
+  color: #81c995;
+}
+
+#battery.warning {
+  color: #fdd663;
+  background: rgba(253, 214, 99, 0.1);
+}
+
+#battery.critical {
+  color: #f28b82;
+  background: rgba(242, 139, 130, 0.15);
+  animation: critical-pulse 1s linear infinite;
+}
+
+#battery.charging {
+  color: #99ffdd;
+  animation: pulse-glow-charging 2.5s infinite;
+}
+
+@keyframes critical-pulse {
+  0% {
+    border-color: rgba(242, 139, 130, 0.2);
+  }
+
+  50% {
+    border-color: rgba(242, 139, 130, 0.8);
+  }
+
+  100% {
+    border-color: rgba(242, 139, 130, 0.2);
+  }
+}
+
+@keyframes pulse-glow-charging {
+  0% {
+    text-shadow: 0 0 4px rgba(153, 255, 221, 0.2);
+  }
+
+  50% {
+    text-shadow: 0 0 10px rgba(153, 255, 221, 0.6);
+  }
+
+  100% {
+    text-shadow: 0 0 4px rgba(153, 255, 221, 0.2);
+  }
+}
+
+/* ── Tray & connectivity ───────────────────────── */
+#tray {
+  margin-right: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0 8px;
+  border-radius: 8px;
+}
+
+#custom-expand-icon {
+  margin-right: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.2s ease;
+}
+
+#custom-expand-icon:hover {
+  color: #ffffff;
+}
+
+/* ── Indicators (Voxtype, Screenrec, Idle, Apps, Power) ───────── */
+#custom-screenrecording-indicator,
+#custom-idle-indicator,
+#custom-notification-silencing-indicator,
+#custom-voxtype,
+#custom-ollama,
+#custom-docker,
+#custom-power {
+  font-size: 13px;
+  margin: 0 4px;
+  padding: 0 6px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+#custom-power {
+  color: #f28b82;
+  margin-left: 8px;
+  background: rgba(242, 139, 130, 0.05);
+}
+
+#custom-power:hover {
+  background: rgba(242, 139, 130, 0.2);
+  text-shadow: 0 0 10px rgba(242, 139, 130, 0.6);
+}
+
+#custom-ollama {
+  color: #a8c7fa;
+}
+
+#custom-docker {
+  color: #81c995;
+}
+
+#custom-ollama:hover,
+#custom-docker:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#custom-screenrecording-indicator.active,
+#custom-voxtype.recording,
+#custom-idle-indicator.active,
+#custom-notification-silencing-indicator.active {
+  color: #f28b82;
+  background: rgba(242, 139, 130, 0.1);
+  text-shadow: 0 0 8px rgba(242, 139, 130, 0.4);
+}
+
+#custom-voxtype.transcribing {
+  color: #fce8b2;
+  animation: pulse-glow 1.5s infinite;
+}
+
+/* ── Update ────────────────────────────────────────────── */
+#custom-update {
+  font-size: 11px;
+  color: #fdd663;
+  background: rgba(253, 214, 99, 0.1);
+}
+
+/* ── Timetable ─────────────────────────────────────────── */
+#custom-timetable {
+  margin: 0 6px;
+  font-weight: bold;
+  padding: 0 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+#group-status-indicators,
+#group-system-stats,
+#group-connectivity {
+  margin: 0 4px;
+  padding: 0 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+#group-status-indicators:hover,
+#group-system-stats:hover,
+#group-connectivity:hover,
+#group-ai-launchers:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ai-item {
+  margin: 0 4px;
+}
+
+.ai-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#custom-timetable.focus {
+  color: #89b4fa;
+  background: rgba(137, 180, 250, 0.1);
+}
+
+#custom-timetable.focus:hover {
+  background: rgba(137, 180, 250, 0.2);
+}
+
+#custom-timetable.contest {
+  color: #f38ba8;
+  background: rgba(243, 139, 168, 0.1);
+}
+
+#custom-timetable.contest:hover {
+  background: rgba(243, 139, 168, 0.2);
+}
+
+#custom-timetable.free {
+  color: #a6e3a1;
+  background: rgba(166, 227, 161, 0.1);
+}
+
+#custom-timetable.free:hover {
+  background: rgba(166, 227, 161, 0.2);
+}
+
+/* ── Tooltip ───────────────────────────────────────────── */
+tooltip {
+  background: rgba(20, 20, 22, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+tooltip label {
+  color: #e8eaed;
+  font-size: 11px;
+}
+
+.hidden {
+  opacity: 0;
+}

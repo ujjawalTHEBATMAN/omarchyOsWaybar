@@ -1,0 +1,365 @@
+{
+    // --- WAYBAR MAIN CONFIGURATION ---
+    "reload_style_on_change": true,
+    "layer": "top",
+    "position": "top",
+    "spacing": 4,
+    "height": 32,
+    "margin-top": 6,
+    "margin-left": 120,
+    "margin-right": 120,
+    // --- MODULE INCLUSIONS ---
+    "include": [
+        "~/.config/waybar/modules/custom-modules.jsonc"
+    ],
+    // --- MODULE LAYOUT ---
+    "modules-left": [
+        "custom/omarchy",
+        "hyprland/workspaces",
+        "hyprland/window"
+    ],
+    "modules-center": [
+        "clock",
+        "custom/timetable"
+    ],
+    "modules-right": [
+        "mpris",
+        "group/media-controls",
+        "group/status-indicators",
+        "group/ai-launchers",
+        "group/system-stats",
+        "group/connectivity",
+        "group/tray-expander",
+        "custom/power"
+    ],
+    // --- LEFT MODULES ---
+    "custom/omarchy": {
+        "format": "<span font='omarchy'>\ue900</span>",
+        "on-click": "omarchy-menu",
+        "on-click-right": "xdg-terminal-exec",
+        "tooltip-format": "Omarchy Menu\n\nSuper + Alt + Space"
+    },
+    "hyprland/workspaces": {
+        "on-click": "activate",
+        "format": "{icon}",
+        "on-scroll-up": "hyprctl dispatch workspace e+1",
+        "on-scroll-down": "hyprctl dispatch workspace e-1",
+        "format-icons": {
+            "default": "",
+            "1": "1",
+            "2": "2",
+            "3": "3",
+            "4": "4",
+            "5": "5",
+            "6": "6",
+            "7": "7",
+            "8": "8",
+            "9": "9",
+            "10": "0",
+            "active": "󱓻",
+            "urgent": "󰀨"
+        },
+        "persistent-workspaces": {
+            "*": 5
+        }
+    },
+    "hyprland/window": {
+        "format": "👉 {}",
+        "max-length": 40,
+        "separate-outputs": true
+    },
+    // --- CENTER MODULES ---
+    "clock": {
+        "format": "󰥔 {:L%A %I:%M %p}",
+        "format-alt": " {:L%d %B W%V %Y}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode": "year",
+            "mode-mon-col": 3,
+            "weeks-pos": "right",
+            "on-scroll": 1,
+            "format": {
+                "months": "<span color='#ffead3'><b>{}</b></span>",
+                "days": "<span color='#ecc6d9'><b>{}</b></span>",
+                "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
+                "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
+                "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+            }
+        },
+        "on-click-right": "omarchy-launch-floating-terminal-with-presentation omarchy-tz-select"
+    },
+    "custom/timetable": {
+        "exec": "/home/ujjawal/.config/waybar/scripts/timetable.sh",
+        "return-type": "json",
+        "format": "{}",
+        "tooltip": false
+    },
+    // --- MEDIA PLAYBACK ---
+    "mpris": {
+        "format": "{status_icon} {artist} — {title}",
+        "format-paused": "{status_icon} <i>{title}</i>",
+        "format-stopped": "",
+        "format-disconnected": "",
+        "max-length": 32,
+        "player-icons": {
+            "default": "🎵",
+            "mpv": "󰎈",
+            "spotify": "󰓇",
+            "brave": "󰖟",
+            "firefox": "󰈹",
+            "chromium": "󰊯"
+        },
+        "status-icons": {
+            "playing": "󰐊",
+            "paused": "󰏤",
+            "stopped": "󰓛"
+        },
+        "tooltip-format": "🎧 Now Playing\n━━━━━━━━━━━━━━━━━━━━━\n󰎈  {title}\n󰠃  {artist}\n󰀥  {album}\n⏱  {position} / {length}\n\n󰐊 Click → Play/Pause\n󰒭 Right → Next\n󰒮 Middle → Previous",
+        "tooltip-format-paused": "⏸ Paused\n━━━━━━━━━━━━━━━━━━━━━\n󰎈  {title}\n󰠃  {artist}\n⏱  {position} / {length}\n\n󰐊 Click → Resume",
+        "on-click": "playerctl play-pause",
+        "on-click-right": "playerctl next",
+        "on-click-middle": "playerctl previous",
+        "on-scroll-up": "playerctl position 5+",
+        "on-scroll-down": "playerctl position 5-"
+    },
+    "group/media-controls": {
+        "orientation": "horizontal",
+        "modules": [
+            "custom/media-prev",
+            "custom/media-play",
+            "custom/media-next",
+            "custom/media-stop"
+        ]
+    },
+    "custom/media-prev": {
+        "format": "󰒮",
+        "on-click": "~/.config/waybar/scripts/music-autoplay.sh prev",
+        "on-click-right": "~/.config/waybar/scripts/music-autoplay.sh seek-back",
+        "on-click-middle": "~/.config/waybar/scripts/music-autoplay.sh cycle-player",
+        "tooltip-format": "⏮ Previous Track\nRight-click: Seek back 10s\nMiddle-click: Cycle player"
+    },
+    "custom/media-play": {
+        "format": "{icon}",
+        "return-type": "json",
+        "exec": "~/.config/waybar/scripts/music-autoplay.sh status",
+        "on-click": "~/.config/waybar/scripts/music-autoplay.sh toggle",
+        "on-click-right": "~/.config/waybar/scripts/music-autoplay.sh shuffle",
+        "on-click-middle": "~/.config/waybar/scripts/music-autoplay.sh stop",
+        "on-scroll-up": "~/.config/waybar/scripts/music-autoplay.sh vol-up",
+        "on-scroll-down": "~/.config/waybar/scripts/music-autoplay.sh vol-down",
+        "signal": 8,
+        "tooltip": true
+    },
+    "custom/media-next": {
+        "format": "󰒭",
+        "on-click": "~/.config/waybar/scripts/music-autoplay.sh next",
+        "on-click-right": "~/.config/waybar/scripts/music-autoplay.sh seek-forward",
+        "on-click-middle": "~/.config/waybar/scripts/music-autoplay.sh replace",
+        "tooltip-format": "⏭ Next Track\nRight-click: Seek forward 10s\nMiddle-click: Replace track"
+    },
+    "custom/media-stop": {
+        "format": "󰓛",
+        "on-click": "~/.config/waybar/scripts/music-autoplay.sh stop",
+        "on-click-right": "~/.config/waybar/scripts/music-autoplay.sh mode",
+        "tooltip-format": "⏹ Stop All\nRight-click: Cycle mode (Auto/MPRIS/Local)"
+    },
+    "group/status-indicators": {
+        "orientation": "horizontal",
+        "modules": [
+            "custom/update",
+            "custom/voxtype",
+            "custom/screenrecording-indicator",
+            "custom/idle-indicator",
+            "custom/notification-silencing-indicator"
+        ]
+    },
+    "group/ai-launchers": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 500,
+            "children-class": "ai-item",
+            "transition-left-to-right": false
+        },
+        "modules": [
+            "image#chatgpt",
+            "image#gemini",
+            "image#claude",
+            "image#kimi",
+            "image#qwen",
+            "image#deepseek",
+            "image#mistral",
+            "image#copilot",
+            "image#huggingface",
+            "image#blackbox"
+        ]
+    },
+    "custom/voxtype": {
+        "exec": "omarchy-voxtype-status",
+        "return-type": "json",
+        "format": "{icon}",
+        "format-icons": {
+            "idle": "",
+            "recording": "󰍬",
+            "transcribing": "󰔟"
+        },
+        "tooltip": true,
+        "on-click-right": "omarchy-voxtype-config",
+        "on-click": "omarchy-voxtype-model"
+    },
+    "custom/screenrecording-indicator": {
+        "on-click": "omarchy-cmd-screenrecord",
+        "exec": "$OMARCHY_PATH/default/waybar/indicators/screen-recording.sh",
+        "signal": 8,
+        "return-type": "json"
+    },
+    "custom/idle-indicator": {
+        "on-click": "omarchy-toggle-idle",
+        "exec": "$OMARCHY_PATH/default/waybar/indicators/idle.sh",
+        "signal": 9,
+        "return-type": "json"
+    },
+    "custom/notification-silencing-indicator": {
+        "on-click": "omarchy-toggle-notification-silencing",
+        "exec": "$OMARCHY_PATH/default/waybar/indicators/notification-silencing.sh",
+        "signal": 10,
+        "return-type": "json"
+    },
+    "custom/update": {
+        "format": "",
+        "exec": "omarchy-update-available",
+        "on-click": "omarchy-launch-floating-terminal-with-presentation omarchy-update",
+        "tooltip-format": "Omarchy update available",
+        "signal": 7,
+        "interval": 21600
+    },
+    "group/tray-expander": {
+        "orientation": "inherit",
+        "drawer": {
+            "transition-duration": 600,
+            "children-class": "tray-group-item"
+        },
+        "modules": [
+            "custom/expand-icon",
+            "tray"
+        ]
+    },
+    "custom/expand-icon": {
+        "format": "",
+        "tooltip": false
+    },
+    "tray": {
+        "icon-size": 14,
+        "spacing": 10
+    },
+    "group/system-stats": {
+        "orientation": "horizontal",
+        "modules": [
+            "pulseaudio",
+            "cpu",
+            "memory",
+            "temperature",
+            "battery"
+        ]
+    },
+    "group/connectivity": {
+        "orientation": "horizontal",
+        "modules": [
+            "network",
+            "bluetooth"
+        ]
+    },
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-muted": " Muted",
+        "on-click": "omarchy-launch-audio",
+        "on-click-right": "pamixer -t",
+        "tooltip-format": "Playing at {volume}%",
+        "scroll-step": 5,
+        "format-icons": {
+            "headphone": "",
+            "headset": "󰋎",
+            "default": [
+                "",
+                "",
+                ""
+            ]
+        }
+    },
+    "network": {
+        "format-icons": [
+            "󰤯",
+            "󰤟",
+            "󰤢",
+            "󰤥",
+            "󰤨"
+        ],
+        "format": "{icon}",
+        "format-wifi": "{icon} {essid}",
+        "format-ethernet": "󰀂 {ipaddr}",
+        "format-disconnected": "󰤮",
+        "tooltip-format-wifi": "Signal: {signaldBm} dBm\n⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
+        "tooltip-format-ethernet": "⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
+        "tooltip-format-disconnected": "Disconnected",
+        "interval": 3,
+        "on-click": "omarchy-launch-wifi"
+    },
+    "bluetooth": {
+        "format": "",
+        "format-off": "󰂲",
+        "format-disabled": "󰂲",
+        "format-connected": "󰂱 {device_alias}",
+        "tooltip-format": "Devices connected: {num_connections}\n{device_enumerate}",
+        "tooltip-format-enumerate": "{device_alias} ({device_address})",
+        "on-click": "omarchy-launch-bluetooth"
+    },
+    "cpu": {
+        "interval": 2,
+        "format": "󰍛 {usage}%",
+        "tooltip": true,
+        "on-click": "omarchy-launch-or-focus-tui btop",
+        "on-click-right": "alacritty"
+    },
+    "memory": {
+        "interval": 2,
+        "format": "󰘚 {percentage}%",
+        "tooltip-format": "RAM: {used:0.1f}GB / {total:0.1f}GB\nSwap: {swapUsed:0.1f}GB / {swapTotal:0.1f}GB",
+        "on-click": "omarchy-launch-or-focus-tui btop"
+    },
+    "temperature": {
+        "critical-threshold": 80,
+        "format": "{icon} {temperatureC}°C",
+        "format-icons": [
+            "",
+            "",
+            ""
+        ],
+        "tooltip": true
+    },
+    "battery": {
+        "format": "{icon} {capacity}%",
+        "format-discharging": "{icon} {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
+        "format-plugged": " {capacity}%",
+        "format-full": "󰂅 100%",
+        "format-icons": [
+            "󰁺",
+            "󰁻",
+            "󰁼",
+            "󰁽",
+            "󰁾",
+            "󰁿",
+            "󰂀",
+            "󰂁",
+            "󰂂",
+            "󰁹"
+        ],
+        "tooltip-format-discharging": "Time left: {time}\nPower Draw: {power:>1.0f}W",
+        "tooltip-format-charging": "Time to full: {time}\nCharging at: {power:>1.0f}W",
+        "interval": 5,
+        "on-click": "omarchy-menu power",
+        "states": {
+            "warning": 20,
+            "critical": 10
+        }
+    }
+}

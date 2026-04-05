@@ -1,327 +1,641 @@
-#!/bin/bash
-# ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║              Smart Music Controller for Waybar                                ║
-# ║  Unified control: Play/Pause, Prev/Next with local music library             ║
-# ╚══════════════════════════════════════════════════════════════════════════════╝
+#!/usr/bin/env bash
+# Waybar Music Controller
+# Features:
+# - Unified controls for MPRIS players + local mpv fallback
+# - Shuffle queue from ~/Music
+# - Player cycling, mode switching, seek and volume actions
+# - Rich JSON status for Waybar custom modules
 
-MUSIC_DIR="$HOME/Music"
-QUEUE_FILE="/tmp/waybar-music-queue"
-INDEX_FILE="/tmp/waybar-music-index"
-CURRENT_TRACK_FILE="/tmp/waybar-music-current"
+set -u
 
-# ─────────────────────────────────────────────────────────────────────────────
-# SIGNAL TRIGGER FOR INSTANT WAYBAR UPDATES
-# ─────────────────────────────────────────────────────────────────────────────
+MUSIC_DIR="${MUSIC_DIR:-$HOME/Music}"
+STATE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/waybar-music"
+QUEUE_FILE="$STATE_DIR/queue"
+INDEX_FILE="$STATE_DIR/index"
+CURRENT_TRACK_FILE="$STATE_DIR/current_track"
+MODE_FILE="$STATE_DIR/mode"
+PREFERRED_PLAYER_FILE="$STATE_DIR/preferred_player"
+SIGNAL=8
+MAX_LABEL_LEN=22
+SEEK_STEP="${WAYBAR_MUSIC_SEEK_STEP:-10}"
+VOLUME_STEP="${WAYBAR_MUSIC_VOLUME_STEP:-0.05}"
+LOCAL_MPV_PATTERN='mpv.*waybar-music-player'
+
+mkdir -p "$STATE_DIR"
 
 trigger_update() {
-    pkill -RTMIN+8 waybar 2>/dev/null
+  pkill -RTMIN+"$SIGNAL" waybar 2>/dev/null || true
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER FUNCTIONS
-# ─────────────────────────────────────────────────────────────────────────────
+notify() {
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send -i audio-x-generic "$1" "$2" -t "${3:-1800}" >/dev/null 2>&1 || true
+  fi
+}
 
-# Get all music files recursively
+json_escape() {
+  printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e ':a;N;$!ba;s/\n/\\n/g' -e 's/\r/\\r/g' -e 's/\t/\\t/g'
+}
+
+trim_label() {
+  local text="$1"
+  if [ "${#text}" -gt "$MAX_LABEL_LEN" ]; then
+    printf '%s…' "${text:0:$((MAX_LABEL_LEN-1))}"
+  else
+    printf '%s' "$text"
+  fi
+}
+
+# ---------- Local queue helpers ----------
+
 get_music_files() {
-    find "$MUSIC_DIR" -type f \( \
-        -iname "*.mp3" -o -iname "*.flac" -o -iname "*.wav" -o \
-        -iname "*.ogg" -o -iname "*.m4a" -o -iname "*.aac" -o \
-        -iname "*.opus" -o -iname "*.wma" \
-    \) 2>/dev/null
+  find "$MUSIC_DIR" -type f \( \
+    -iname "*.mp3" -o -iname "*.flac" -o -iname "*.wav" -o \
+    -iname "*.ogg" -o -iname "*.m4a" -o -iname "*.aac" -o \
+    -iname "*.opus" -o -iname "*.wma" \
+  \) 2>/dev/null
 }
 
-# Build shuffled queue
 build_queue() {
-    get_music_files | shuf > "$QUEUE_FILE"
+  get_music_files | shuf > "$QUEUE_FILE"
+  if [ -s "$QUEUE_FILE" ]; then
     echo "1" > "$INDEX_FILE"
+  else
+    : > "$INDEX_FILE"
+  fi
 }
 
-# Get current index
-get_index() {
-    cat "$INDEX_FILE" 2>/dev/null || echo "1"
+ensure_queue() {
+  if [ ! -s "$QUEUE_FILE" ]; then
+    build_queue
+  fi
 }
 
-# Get total tracks
-get_total() {
-    wc -l < "$QUEUE_FILE" 2>/dev/null || echo "0"
+queue_total() {
+  wc -l < "$QUEUE_FILE" 2>/dev/null || echo "0"
 }
 
-# Get track at index
-get_track_at() {
-    local idx=$1
-    sed -n "${idx}p" "$QUEUE_FILE" 2>/dev/null
+queue_index() {
+  cat "$INDEX_FILE" 2>/dev/null || echo "1"
 }
 
-# Check if our mpv music player is running (using specific class name)
-is_our_mpv_running() {
-    pgrep -f "mpv.*waybar-music-player" >/dev/null 2>&1
+queue_track_at() {
+  sed -n "${1}p" "$QUEUE_FILE" 2>/dev/null
 }
 
-# Get our mpv PID
-get_our_mpv_pid() {
-    pgrep -f "mpv.*waybar-music-player" 2>/dev/null | head -1
+music_count() {
+  if [ -s "$QUEUE_FILE" ]; then
+    queue_total
+  else
+    get_music_files | wc -l
+  fi
 }
 
-# Check if any MPRIS player is active (Spotify, Firefox, etc.)
-is_mpris_active() {
-    local status=$(playerctl -a status 2>/dev/null | grep -E "Playing|Paused" | head -1)
-    [ -n "$status" ]
+# ---------- Player detection ----------
+
+has_playerctl() {
+  command -v playerctl >/dev/null 2>&1
 }
 
-# Get MPRIS player status
-get_mpris_status() {
-    playerctl status 2>/dev/null
+list_players() {
+  has_playerctl || return 0
+  playerctl -l 2>/dev/null | sort -u
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
-# PLAYBACK CONTROLS
-# ─────────────────────────────────────────────────────────────────────────────
+player_status() {
+  has_playerctl || return 1
+  playerctl --player="$1" status 2>/dev/null
+}
 
-# Play a specific track
-play_track() {
-    local track="$1"
-    
-    if [ -z "$track" ] || [ ! -f "$track" ]; then
-        notify-send -i dialog-warning "Music" "Track not found" -t 2000
-        return 1
+pick_external_player() {
+  has_playerctl || return 0
+
+  local preferred player status
+  preferred="$(cat "$PREFERRED_PLAYER_FILE" 2>/dev/null || true)"
+
+  if [ -n "$preferred" ]; then
+    status="$(player_status "$preferred" || true)"
+    if [ "$status" = "Playing" ] || [ "$status" = "Paused" ]; then
+      printf '%s' "$preferred"
+      return
     fi
-    
-    # Stop any existing music player we started
-    stop_our_mpv
-    
-    # Save current track
-    echo "$track" > "$CURRENT_TRACK_FILE"
-    
-    # Start mpv with a unique title so we can identify it
-    # Using --title for identification
-    nohup mpv --audio-display=no --force-window=no --really-quiet \
-        --title="waybar-music-player" "$track" &>/dev/null &
-    
-    # Notification
-    local filename=$(basename "$track")
-    local name="${filename%.*}"
-    # Truncate long names
-    [ ${#name} -gt 40 ] && name="${name:0:37}..."
-    notify-send -i audio-x-generic "🎵 Now Playing" "$name" -t 3000
-}
+  fi
 
-# Stop our mpv player only
-stop_our_mpv() {
-    pkill -f "mpv.*waybar-music-player" 2>/dev/null
-    # Small delay to ensure process is killed
-    sleep 0.1
-}
-
-# Toggle play/pause
-toggle_play_pause() {
-    # Check if our mpv is running
-    if is_our_mpv_running; then
-        # Our player is running - stop it
-        stop_our_mpv
-        notify-send -i audio-x-generic "Music" "Paused" -t 1500
-        trigger_update
-        return
+  while IFS= read -r player; do
+    status="$(player_status "$player" || true)"
+    if [ "$status" = "Playing" ]; then
+      printf '%s' "$player"
+      return
     fi
-    
-    # Check if MPRIS player (Spotify, Firefox, etc.) is active
-    local mpris_status=$(get_mpris_status)
-    if [ "$mpris_status" = "Playing" ] || [ "$mpris_status" = "Paused" ]; then
-        playerctl play-pause
-        trigger_update
-        return
+  done < <(list_players)
+
+  while IFS= read -r player; do
+    status="$(player_status "$player" || true)"
+    if [ "$status" = "Paused" ]; then
+      printf '%s' "$player"
+      return
     fi
-    
-    # Nothing playing - start random music
-    play_random
-    trigger_update
+  done < <(list_players)
 }
 
-# Play random track
-play_random() {
-    # Build queue if needed
-    [ ! -f "$QUEUE_FILE" ] || [ ! -s "$QUEUE_FILE" ] && build_queue
-    
-    local total=$(get_total)
-    [ "$total" -eq 0 ] && { notify-send -i dialog-warning "Music" "No music found in $MUSIC_DIR" -t 3000; return 1; }
-    
-    # Pick random index
-    local idx=$((RANDOM % total + 1))
-    echo "$idx" > "$INDEX_FILE"
-    
-    local track=$(get_track_at "$idx")
-    play_track "$track"
+is_local_running() {
+  pgrep -f "$LOCAL_MPV_PATTERN" >/dev/null 2>&1
 }
 
-# Play next track
-play_next() {
-    # Stop our player if running (will start new track)
-    local was_playing=0
-    if is_our_mpv_running; then
-        stop_our_mpv
-        was_playing=1
-    fi
-    
-    # If MPRIS active and we weren't playing, use playerctl
-    if [ "$was_playing" -eq 0 ] && is_mpris_active; then
-        playerctl next
-        trigger_update
-        return
-    fi
-    
-    # Build queue if needed
-    [ ! -f "$QUEUE_FILE" ] || [ ! -s "$QUEUE_FILE" ] && build_queue
-    
-    local idx=$(get_index)
-    local total=$(get_total)
-    
-    # Increment index (wrap around)
-    idx=$((idx + 1))
-    [ "$idx" -gt "$total" ] && idx=1
-    
-    echo "$idx" > "$INDEX_FILE"
-    local track=$(get_track_at "$idx")
-    play_track "$track"
-    trigger_update
+stop_local() {
+  pkill -f "$LOCAL_MPV_PATTERN" 2>/dev/null || true
 }
 
-# Play previous track
-play_prev() {
-    # Stop our player if running (will start new track)
-    local was_playing=0
-    if is_our_mpv_running; then
-        stop_our_mpv
-        was_playing=1
-    fi
-    
-    # If MPRIS active and we weren't playing, use playerctl
-    if [ "$was_playing" -eq 0 ] && is_mpris_active; then
-        playerctl previous
-        trigger_update
-        return
-    fi
-    
-    # Build queue if needed
-    [ ! -f "$QUEUE_FILE" ] || [ ! -s "$QUEUE_FILE" ] && build_queue
-    
-    local idx=$(get_index)
-    local total=$(get_total)
-    
-    # Decrement index (wrap around)
-    idx=$((idx - 1))
-    [ "$idx" -lt 1 ] && idx=$total
-    
-    echo "$idx" > "$INDEX_FILE"
-    local track=$(get_track_at "$idx")
-    play_track "$track"
-    trigger_update
+current_mode() {
+  local mode
+  mode="$(cat "$MODE_FILE" 2>/dev/null || echo "auto")"
+  case "$mode" in
+    auto|mpris|local) printf '%s' "$mode" ;;
+    *) printf 'auto' ;;
+  esac
 }
 
-# Stop all playback
-stop_all() {
-    stop_our_mpv
-    playerctl -a stop 2>/dev/null
-    notify-send -i audio-x-generic "Music" "Playback stopped" -t 2000
-    trigger_update
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# WAYBAR STATUS OUTPUT (JSON)
-# ─────────────────────────────────────────────────────────────────────────────
-
-# Get MPRIS metadata for tooltip
-get_mpris_tooltip() {
-    local artist=$(playerctl metadata artist 2>/dev/null)
-    local title=$(playerctl metadata title 2>/dev/null)
-    if [ -n "$title" ]; then
-        [ -n "$artist" ] && echo "♪ $artist - $title" || echo "♪ $title"
-    else
-        echo "Media Player"
-    fi
-}
-
-# Get play/pause button status
-get_playpause_status() {
-    local track_count=$(get_music_files | wc -l)
-    
-    # Check if our mpv is running first
-    if is_our_mpv_running; then
-        local track=$(cat "$CURRENT_TRACK_FILE" 2>/dev/null | xargs -r basename)
-        [ -n "$track" ] && track="${track%.*}"
-        echo "{\"text\": \"󰏤\", \"class\": \"playing\", \"tooltip\": \"Pause: ${track:-Local Music}\"}"
-        return
-    fi
-    
-    # Check MPRIS players (Spotify, Firefox, etc.)
-    local mpris_status=$(get_mpris_status)
-    local tooltip=$(get_mpris_tooltip)
-    
-    if [ "$mpris_status" = "Playing" ]; then
-        echo "{\"text\": \"󰏤\", \"class\": \"playing\", \"tooltip\": \"Pause: $tooltip\"}"
-    elif [ "$mpris_status" = "Paused" ]; then
-        echo "{\"text\": \"󰐊\", \"class\": \"paused\", \"tooltip\": \"Resume: $tooltip\"}"
-    else
-        # Nothing playing - show play button
-        echo "{\"text\": \"󰐊\", \"class\": \"stopped\", \"tooltip\": \"🎵 Shuffle Play (${track_count} tracks)\"}"
-    fi
-}
-
-# Get prev button status
-get_prev_status() {
-    echo '{"text": "󰒮", "class": "control", "tooltip": "Previous Track"}'
-}
-
-# Get next button status  
-get_next_status() {
-    echo '{"text": "󰒭", "class": "control", "tooltip": "Next Track"}'
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# MAIN COMMAND HANDLER
-# ─────────────────────────────────────────────────────────────────────────────
-
-case "$1" in
-    # Playback controls
-    "toggle"|"play-pause")
-        toggle_play_pause
-        ;;
-    "play")
-        play_random
-        ;;
-    "next")
-        play_next
-        ;;
-    "prev"|"previous")
-        play_prev
-        ;;
-    "stop")
-        stop_all
-        ;;
-    "shuffle"|"rebuild")
-        build_queue
-        notify-send -i audio-x-generic "Music Queue" "Shuffled $(get_total) tracks" -t 2000
-        ;;
-    
-    # Status for waybar
-    "status")
-        get_playpause_status
-        ;;
-    "status-prev")
-        get_prev_status
-        ;;
-    "status-next")
-        get_next_status
-        ;;
-    
-    # Info
-    "count")
-        get_music_files | wc -l
-        ;;
-    "current")
-        cat "$CURRENT_TRACK_FILE" 2>/dev/null | xargs -r basename || echo "None"
-        ;;
-    
-    # Default: toggle play/pause
+set_mode() {
+  local mode="$1"
+  case "$mode" in
+    auto|mpris|local)
+      printf '%s' "$mode" > "$MODE_FILE"
+      notify "Music Mode" "Switched to $mode" 1400
+      ;;
     *)
-        toggle_play_pause
-        ;;
+      notify "Music Mode" "Invalid mode: $mode" 1400
+      ;;
+  esac
+  trigger_update
+}
+
+cycle_mode() {
+  case "$(current_mode)" in
+    auto) set_mode "mpris" ;;
+    mpris) set_mode "local" ;;
+    *) set_mode "auto" ;;
+  esac
+}
+
+active_target() {
+  local mode player
+  mode="$(current_mode)"
+
+  case "$mode" in
+    local)
+      printf 'local'
+      return
+      ;;
+    mpris)
+      player="$(pick_external_player)"
+      if [ -n "$player" ]; then
+        printf 'mpris:%s' "$player"
+      else
+        printf 'none'
+      fi
+      return
+      ;;
+  esac
+
+  if is_local_running; then
+    printf 'local'
+    return
+  fi
+
+  player="$(pick_external_player)"
+  if [ -n "$player" ]; then
+    printf 'mpris:%s' "$player"
+  else
+    printf 'none'
+  fi
+}
+
+# ---------- Playback actions ----------
+
+play_local_track() {
+  local track="$1"
+  [ -n "$track" ] || return 1
+  [ -f "$track" ] || return 1
+
+  if ! command -v mpv >/dev/null 2>&1; then
+    notify "Music" "mpv is not installed" 2200
+    return 1
+  fi
+
+  stop_local
+  echo "$track" > "$CURRENT_TRACK_FILE"
+
+  nohup mpv \
+    --audio-display=no \
+    --force-window=no \
+    --no-video \
+    --really-quiet \
+    --title="waybar-music-player" \
+    "$track" >/dev/null 2>&1 &
+
+  local title
+  title="$(basename "$track")"
+  title="${title%.*}"
+  notify "Now Playing" "$(trim_label "$title")" 2200
+  return 0
+}
+
+play_local_random() {
+  ensure_queue
+  local total idx track
+  total="$(queue_total)"
+  if [ "$total" -eq 0 ]; then
+    notify "Music" "No tracks found in $MUSIC_DIR" 2400
+    return 1
+  fi
+
+  idx=$((RANDOM % total + 1))
+  echo "$idx" > "$INDEX_FILE"
+  track="$(queue_track_at "$idx")"
+  play_local_track "$track"
+}
+
+local_next() {
+  ensure_queue
+  local idx total track
+  total="$(queue_total)"
+  [ "$total" -gt 0 ] || { notify "Music" "No local queue available" 2000; return 1; }
+
+  idx="$(queue_index)"
+  idx=$((idx + 1))
+  [ "$idx" -le "$total" ] || idx=1
+  echo "$idx" > "$INDEX_FILE"
+
+  track="$(queue_track_at "$idx")"
+  play_local_track "$track"
+}
+
+local_prev() {
+  ensure_queue
+  local idx total track
+  total="$(queue_total)"
+  [ "$total" -gt 0 ] || { notify "Music" "No local queue available" 2000; return 1; }
+
+  idx="$(queue_index)"
+  idx=$((idx - 1))
+  [ "$idx" -ge 1 ] || idx="$total"
+  echo "$idx" > "$INDEX_FILE"
+
+  track="$(queue_track_at "$idx")"
+  play_local_track "$track"
+}
+
+external_do() {
+  local player="$1"
+  shift
+  has_playerctl || return 1
+  playerctl --player="$player" "$@" >/dev/null 2>&1
+}
+
+toggle_play_pause() {
+  local target player
+  target="$(active_target)"
+
+  case "$target" in
+    local)
+      if is_local_running; then
+        stop_local
+        notify "Music" "Local playback stopped" 1200
+      else
+        local track
+        track="$(cat "$CURRENT_TRACK_FILE" 2>/dev/null || true)"
+        if [ -n "$track" ] && [ -f "$track" ]; then
+          play_local_track "$track"
+        else
+          play_local_random
+        fi
+      fi
+      ;;
+    mpris:*)
+      player="${target#mpris:}"
+      external_do "$player" play-pause || notify "Music" "Unable to toggle $player" 1400
+      ;;
+    *)
+      play_local_random
+      ;;
+  esac
+
+  trigger_update
+}
+
+play_next() {
+  local target player
+  target="$(active_target)"
+
+  case "$target" in
+    local) local_next ;;
+    mpris:*)
+      player="${target#mpris:}"
+      external_do "$player" next || notify "Music" "Unable to skip next" 1400
+      ;;
+    *) local_next ;;
+  esac
+
+  trigger_update
+}
+
+play_prev() {
+  local target player
+  target="$(active_target)"
+
+  case "$target" in
+    local) local_prev ;;
+    mpris:*)
+      player="${target#mpris:}"
+      external_do "$player" previous || notify "Music" "Unable to go previous" 1400
+      ;;
+    *) local_prev ;;
+  esac
+
+  trigger_update
+}
+
+replace_track() {
+  local target player
+  target="$(active_target)"
+
+  case "$target" in
+    mpris:*)
+      player="${target#mpris:}"
+      external_do "$player" next || true
+      ;;
+    *)
+      play_local_random
+      ;;
+  esac
+
+  trigger_update
+}
+
+seek_by() {
+  local delta="$1"
+  local target player sign abs
+  target="$(active_target)"
+
+  if [ "$delta" -ge 0 ]; then
+    sign="+"
+    abs="$delta"
+  else
+    sign="-"
+    abs=$((delta * -1))
+  fi
+
+  case "$target" in
+    mpris:*)
+      player="${target#mpris:}"
+      external_do "$player" position "${abs}${sign}" || notify "Music" "Seek unsupported for $player" 1400
+      ;;
+    *)
+      notify "Music" "Seek is available for MPRIS players" 1400
+      ;;
+  esac
+
+  trigger_update
+}
+
+volume_by() {
+  local direction="$1"
+  local target player arg
+  target="$(active_target)"
+
+  case "$direction" in
+    up) arg="${VOLUME_STEP}+" ;;
+    down) arg="${VOLUME_STEP}-" ;;
+    *) return 1 ;;
+  esac
+
+  case "$target" in
+    mpris:*)
+      player="${target#mpris:}"
+      external_do "$player" volume "$arg" || notify "Music" "Volume control unsupported for $player" 1400
+      ;;
+    *)
+      # Fallback to system sink volume when no MPRIS target is active.
+      if command -v pactl >/dev/null 2>&1; then
+        if [ "$direction" = "up" ]; then
+          pactl set-sink-volume @DEFAULT_SINK@ +5% >/dev/null 2>&1 || true
+        else
+          pactl set-sink-volume @DEFAULT_SINK@ -5% >/dev/null 2>&1 || true
+        fi
+      fi
+      ;;
+  esac
+
+  trigger_update
+}
+
+stop_all() {
+  stop_local
+
+  if has_playerctl; then
+    while IFS= read -r player; do
+      external_do "$player" stop || true
+    done < <(list_players)
+  fi
+
+  notify "Music" "Playback stopped" 1200
+  trigger_update
+}
+
+shuffle_queue() {
+  build_queue
+  notify "Music Queue" "Shuffled $(queue_total) tracks" 1600
+  trigger_update
+}
+
+cycle_player() {
+  if ! has_playerctl; then
+    notify "Music" "playerctl not installed" 1800
+    trigger_update
+    return
+  fi
+
+  mapfile -t players < <(list_players)
+  if [ "${#players[@]}" -eq 0 ]; then
+    notify "Music" "No MPRIS players found" 1800
+    trigger_update
+    return
+  fi
+
+  local current next i
+  current="$(cat "$PREFERRED_PLAYER_FILE" 2>/dev/null || true)"
+  next="${players[0]}"
+
+  for i in "${!players[@]}"; do
+    if [ "${players[$i]}" = "$current" ]; then
+      next="${players[$(((i + 1) % ${#players[@]}))]}"
+      break
+    fi
+  done
+
+  echo "$next" > "$PREFERRED_PLAYER_FILE"
+  notify "Music Player" "Active player: $next" 1600
+  trigger_update
+}
+
+# ---------- Waybar status ----------
+
+mode_tag() {
+  case "$(current_mode)" in
+    auto) printf 'AUTO' ;;
+    mpris) printf 'MPRIS' ;;
+    local) printf 'LOCAL' ;;
+  esac
+}
+
+status_payload() {
+  local text="$1"
+  local tooltip="$2"
+  local class="$3"
+  printf '{"text":"%s","tooltip":"%s","class":"%s"}\n' \
+    "$(json_escape "$text")" \
+    "$(json_escape "$tooltip")" \
+    "$(json_escape "$class")"
+}
+
+local_track_label() {
+  local track title
+  track="$(cat "$CURRENT_TRACK_FILE" 2>/dev/null || true)"
+  if [ -n "$track" ]; then
+    title="$(basename "$track")"
+    printf '%s' "${title%.*}"
+  else
+    printf 'Local music'
+  fi
+}
+
+external_label() {
+  local player="$1"
+  local artist title
+  artist="$(playerctl --player="$player" metadata artist 2>/dev/null || true)"
+  title="$(playerctl --player="$player" metadata title 2>/dev/null || true)"
+
+  if [ -n "$artist" ] && [ -n "$title" ]; then
+    printf '%s - %s' "$artist" "$title"
+  elif [ -n "$title" ]; then
+    printf '%s' "$title"
+  else
+    printf '%s' "$player"
+  fi
+}
+
+get_playpause_status() {
+  local target mode total status icon class tooltip player label
+  target="$(active_target)"
+  mode="$(mode_tag)"
+  total="$(music_count)"
+
+  case "$target" in
+    local)
+      icon="󰎈"
+      class="playing local"
+      label="$(local_track_label)"
+      tooltip="Mode: $mode\nLocal playback\nTrack: $label\n\nLeft: Play/Pause\nRight: Shuffle queue\nMiddle: Stop\nScroll: Volume" 
+      ;;
+    mpris:*)
+      player="${target#mpris:}"
+      status="$(player_status "$player" || true)"
+      label="$(external_label "$player")"
+
+      if [ "$status" = "Paused" ]; then
+        icon="󰐊"
+        class="paused mpris"
+      else
+        icon="󰎈"
+        class="playing mpris"
+      fi
+
+      tooltip="Mode: $mode\nPlayer: $player ($status)\nNow: $label\n\nLeft: Play/Pause\nRight: Shuffle local queue\nMiddle: Stop\nScroll: Volume"
+      ;;
+    *)
+      icon="󰐊"
+      class="stopped"
+      label=""
+      tooltip="Mode: $mode\nNo active player\nLocal tracks: $total\n\nLeft: Start music\nRight: Shuffle queue\nMiddle: Stop"
+      ;;
+  esac
+
+  # Output only icon - visualizer (cava) shows the animation
+  printf '{"text":"%s","tooltip":"%s","class":"%s"}\n' \
+    "$icon" "$tooltip" "$class"
+}
+
+get_prev_status() {
+  status_payload "󰒮" "Previous\n\nLeft: Previous\nRight: Seek -${SEEK_STEP}s\nMiddle: Cycle player" "control"
+}
+
+get_next_status() {
+  status_payload "󰒭" "Next\n\nLeft: Next\nRight: Seek +${SEEK_STEP}s\nMiddle: Replace track" "control"
+}
+
+# ---------- Main ----------
+
+case "${1:-status}" in
+  toggle|play-pause)
+    toggle_play_pause
+    ;;
+  play)
+    play_local_random
+    trigger_update
+    ;;
+  next)
+    play_next
+    ;;
+  prev|previous)
+    play_prev
+    ;;
+  stop)
+    stop_all
+    ;;
+  shuffle|rebuild)
+    shuffle_queue
+    ;;
+  replace|swap)
+    replace_track
+    ;;
+  cycle-player)
+    cycle_player
+    ;;
+  mode)
+    if [ -n "${2:-}" ]; then
+      set_mode "$2"
+    else
+      cycle_mode
+    fi
+    ;;
+  seek-forward)
+    seek_by "$SEEK_STEP"
+    ;;
+  seek-back)
+    seek_by "$((SEEK_STEP * -1))"
+    ;;
+  vol-up|volume-up)
+    volume_by up
+    ;;
+  vol-down|volume-down)
+    volume_by down
+    ;;
+  status)
+    get_playpause_status
+    ;;
+  status-prev)
+    get_prev_status
+    ;;
+  status-next)
+    get_next_status
+    ;;
+  count)
+    music_count
+    ;;
+  current)
+    local_track_label
+    ;;
+  *)
+    toggle_play_pause
+    ;;
 esac
