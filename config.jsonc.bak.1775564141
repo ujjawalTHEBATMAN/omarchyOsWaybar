@@ -1,0 +1,143 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 40,
+  "spacing": 8,
+  "margin-top": 5,
+  "margin-left": 10,
+  "margin-right": 10,
+  "modules-left": [
+    "hyprland/workspaces",
+    "cpu",
+    "memory"
+  ],
+  "modules-center": [
+    "clock"
+  ],
+  "modules-right": [
+    "custom/voxtype",
+    "custom/screenrecording-indicator",
+    "custom/idle-indicator",
+    "custom/notification-silencing-indicator",
+    "backlight",
+    "pulseaudio",
+    "network",
+    "battery",
+    "group/tray-expander"
+  ],
+  "hyprland/workspaces": {
+    "disable-scroll": true,
+    "all-outputs": true,
+    "active-only": false,
+    "format": "{icon}",
+    "format-icons": {
+      "1": "",
+      "2": "",
+      "3": "",
+      "4": "",
+      "5": "",
+      "urgent": "",
+      "focused": "",
+      "default": ""
+    },
+    "persistent-workspaces": {
+      "*": 5
+    }
+  },
+  "cpu": {
+    "format": "  {usage}%",
+    "tooltip": true
+  },
+  "memory": {
+    "format": "  {}%",
+    "tooltip-format": "{used:0.1f}GB / {total:0.1f}GB"
+  },
+  "backlight": {
+    "format": "{icon}  {percent}%",
+    "format-icons": [
+      "󰃞",
+      "󰃟",
+      "󰃠"
+    ]
+  },
+  "clock": {
+    "format": "  {:%I:%M %p}",
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+    "format-alt": "  {:%A, %B %d, %Y}"
+  },
+  "group/tray-expander": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 600,
+      "children-class": "tray-group-item",
+      "transition-left-to-right": false
+    },
+    "modules": [
+      "custom/expand-icon",
+      "tray"
+    ]
+  },
+  "custom/expand-icon": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/screenrecording-indicator": {
+    "on-click": "omarchy-cmd-screenrecord",
+    "exec": "$OMARCHY_PATH/default/waybar/indicators/screen-recording.sh",
+    "signal": 8,
+    "return-type": "json"
+  },
+  "custom/idle-indicator": {
+    "on-click": "omarchy-toggle-idle",
+    "exec": "$OMARCHY_PATH/default/waybar/indicators/idle.sh",
+    "signal": 9,
+    "return-type": "json"
+  },
+  "custom/notification-silencing-indicator": {
+    "on-click": "omarchy-toggle-notification-silencing",
+    "exec": "$OMARCHY_PATH/default/waybar/indicators/notification-silencing.sh",
+    "signal": 10,
+    "return-type": "json"
+  },
+  "custom/voxtype": {
+    "exec": "omarchy-voxtype-status",
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": {
+      "idle": "",
+      "recording": "󰍬",
+      "transcribing": "󰔟"
+    },
+    "tooltip": true,
+    "on-click-right": "omarchy-voxtype-config",
+    "on-click": "omarchy-voxtype-model"
+  },
+  "tray": {
+    "icon-size": 16,
+    "spacing": 10
+  },
+  "pulseaudio": {
+    "format": "{icon}  {volume}%",
+    "format-bluetooth": "{icon} {volume}%",
+    "format-muted": " Muted",
+    "format-icons": {
+      "headphone": "",
+      "hands-free": "",
+      "headset": "",
+      "phone": "",
+      "portable": "",
+      "car": "",
+      "default": [
+        "",
+        ""
+      ]
+    },
+    "scroll-step": 5,
+    "on-click": "pavucontrol"
+  },
+  "network": {
+    "format-wifi": "   {essid}",
+    "format-ethernet": "  {ipaddr}",
+    "tooltip-format": "  {ifname} via {gwaddr}",
+    "format-linked": "  {ifname} (No IP)",
+    "format-disconnected": "⚠

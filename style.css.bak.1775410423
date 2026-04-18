@@ -1,0 +1,357 @@
+/* ══════════════════════════════════════════════════════════════ */
+/*  WAYBAR STYLE — OmarchyOS · Catppuccin Glassmorphism          */
+/*  Works with: layerrule = blur + ignorezero in Hyprland        */
+/* ══════════════════════════════════════════════════════════════ */
+
+@import "../omarchy/current/theme/waybar.css";
+
+@define-color text #cdd6f4;
+@define-color rosewater #f5e0dc;
+@define-color pink #f5c2e7;
+@define-color mauve #cba6f7;
+@define-color red #f38ba8;
+@define-color peach #fab387;
+@define-color yellow #f9e2af;
+@define-color green #a6e3a1;
+@define-color teal #94e2d5;
+@define-color sapphire #74c7ec;
+@define-color blue #89b4fa;
+@define-color lavender #b4befe;
+
+/* ── Reset ─────────────────────────────────────────────────── */
+* {
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+    font-family: "JetBrainsMono Nerd Font", "FiraCode Nerd Font", monospace;
+    font-size: 12px;
+    color: @text;
+}
+
+/* ── Bar — uses non-zero alpha so ignorezero doesn't hide it ── */
+window#waybar {
+    background-color: rgba(18, 18, 24, 0.85);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.modules-left {
+    margin-left: 12px;
+}
+
+.modules-center {
+    margin: 0 8px;
+}
+
+.modules-right {
+    margin-right: 12px;
+}
+
+/* ── Workspaces ────────────────────────────────────────────── */
+#workspaces {
+    margin: 2px 6px;
+}
+
+#workspaces button {
+    all: initial;
+    padding: 0 6px;
+    margin: 0 1px;
+    min-width: 10px;
+    color: rgba(205, 214, 244, 0.45);
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 12px;
+    border-radius: 6px;
+    transition: all 150ms ease;
+}
+
+#workspaces button.active {
+    color: #181825;
+    background-color: @blue;
+    font-weight: 800;
+}
+
+#workspaces button.urgent {
+    color: #181825;
+    background-color: @red;
+}
+
+#workspaces button.empty {
+    opacity: 0.2;
+}
+
+#workspaces button:hover {
+    background-color: rgba(255, 255, 255, 0.10);
+    color: @text;
+}
+
+/* ── Omarchy Logo ──────────────────────────────────────────── */
+#custom-omarchy {
+    font-size: 14px;
+    padding: 0 10px;
+    margin: 2px 4px;
+    color: @lavender;
+    border-radius: 8px;
+    background-color: rgba(180, 190, 254, 0.10);
+    transition: all 200ms ease;
+}
+
+#custom-omarchy:hover {
+    background-color: rgba(180, 190, 254, 0.22);
+}
+
+/* ── Clock ─────────────────────────────────────────────────── */
+#clock {
+    font-size: 13px;
+    font-weight: 800;
+    color: @rosewater;
+    background-color: rgba(255, 255, 255, 0.08);
+    padding: 0 14px;
+    margin: 2px 4px;
+    border-radius: 10px;
+    border: 1px solid rgba(245, 224, 220, 0.08);
+    transition: all 200ms ease;
+}
+
+#clock:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+}
+
+/* ── Timetable ─────────────────────────────────────────────── */
+#custom-timetable {
+    font-weight: 700;
+    font-size: 11px;
+    padding: 0 10px;
+    margin: 2px 4px;
+    border-radius: 8px;
+    transition: all 200ms ease;
+}
+
+#custom-timetable.focus {
+    color: @blue;
+    background-color: rgba(137, 180, 250, 0.14);
+}
+
+#custom-timetable.focus:hover {
+    background-color: rgba(137, 180, 250, 0.24);
+}
+
+#custom-timetable.contest {
+    color: @red;
+    background-color: rgba(243, 139, 168, 0.14);
+}
+
+#custom-timetable.contest:hover {
+    background-color: rgba(243, 139, 168, 0.24);
+}
+
+#custom-timetable.free {
+    color: @green;
+    background-color: rgba(166, 227, 161, 0.14);
+}
+
+#custom-timetable.free:hover {
+    background-color: rgba(166, 227, 161, 0.24);
+}
+
+/* ── MPRIS ──────────────────────────────────────────────────── */
+#mpris {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 0 10px;
+    margin: 2px 4px;
+    border-radius: 8px;
+    background-color: rgba(137, 180, 250, 0.10);
+    color: @blue;
+    transition: all 200ms ease;
+}
+
+#mpris:hover {
+    background-color: rgba(137, 180, 250, 0.18);
+}
+
+#mpris.playing {
+    color: @green;
+    background-color: rgba(166, 227, 161, 0.12);
+}
+
+#mpris.paused {
+    color: @yellow;
+    background-color: rgba(249, 226, 175, 0.10);
+    opacity: 0.75;
+}
+
+#mpris.paused:hover {
+    opacity: 1;
+}
+
+/* ── System Modules ────────────────────────────────────────── */
+#pulseaudio,
+#cpu,
+#memory,
+#temperature,
+#battery,
+#network,
+#bluetooth,
+#custom-update {
+    font-weight: 600;
+    font-size: 11px;
+    padding: 0 8px;
+    margin: 0 2px;
+    border-radius: 6px;
+    transition: all 200ms ease;
+}
+
+#pulseaudio:hover,
+#cpu:hover,
+#memory:hover,
+#temperature:hover,
+#battery:hover,
+#network:hover,
+#bluetooth:hover,
+#custom-update:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Per-module accent colors */
+#pulseaudio {
+    color: @sapphire;
+}
+
+#pulseaudio.muted {
+    color: rgba(205, 214, 244, 0.35);
+}
+
+#cpu {
+    color: @red;
+}
+
+#memory {
+    color: @mauve;
+}
+
+#temperature {
+    color: @peach;
+}
+
+#temperature.critical {
+    color: @red;
+}
+
+#network {
+    color: @green;
+}
+
+#network.disconnected {
+    color: rgba(205, 214, 244, 0.35);
+}
+
+#bluetooth {
+    color: @blue;
+}
+
+#bluetooth.off {
+    color: rgba(205, 214, 244, 0.35);
+}
+
+#bluetooth.disabled {
+    color: rgba(205, 214, 244, 0.35);
+}
+
+#custom-update {
+    color: @yellow;
+}
+
+/* Battery states */
+#battery {
+    color: @green;
+}
+
+#battery.warning {
+    color: @yellow;
+    background-color: rgba(249, 226, 175, 0.12);
+}
+
+#battery.critical {
+    color: @red;
+    background-color: rgba(243, 139, 168, 0.14);
+    animation-name: blink-critical;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+#battery.charging {
+    color: @teal;
+}
+
+#battery.plugged {
+    color: @teal;
+}
+
+#battery.full {
+    color: @green;
+}
+
+@keyframes blink-critical {
+    to {
+        color: rgba(243, 139, 168, 0.3);
+    }
+}
+
+/* ── AI Hub Drawer ─────────────────────────────────────────── */
+#group-ai-hub {
+    margin: 2px 3px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.06);
+    transition: all 200ms ease;
+}
+
+#group-ai-hub:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.ai-item {
+    margin: 0 2px;
+    padding: 0 2px;
+    border-radius: 4px;
+}
+
+.ai-item:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+}
+
+/* ── Tray ──────────────────────────────────────────────────── */
+#tray {
+    margin: 0 6px;
+}
+
+/* ── Power Button ──────────────────────────────────────────── */
+#custom-power {
+    font-size: 14px;
+    color: @red;
+    padding: 0 8px;
+    margin: 2px 2px;
+    border-radius: 8px;
+    background-color: rgba(243, 139, 168, 0.08);
+    transition: all 200ms ease;
+}
+
+#custom-power:hover {
+    background-color: rgba(243, 139, 168, 0.22);
+    color: #ffffff;
+}
+
+/* ── Tooltips ──────────────────────────────────────────────── */
+tooltip {
+    background-color: rgba(17, 17, 27, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 10px;
+    padding: 8px 12px;
+}
+
+tooltip label {
+    color: @text;
+    font-size: 11px;
+}

@@ -1,12 +1,17 @@
 #!/bin/bash
+# ╔══════════════════════════════════════════════════════════════╗
+# ║  Timetable Script for Waybar · Single-shot (interval mode)  ║
+# ║  Outputs JSON: { text, tooltip, class }                     ║
+# ╚══════════════════════════════════════════════════════════════╝
 
-# --- CONFIGURATION ---
-LOG_FILE="$HOME/task_log.txt"
-ZENITY_TIMEOUT_SECS=180 # Closes the prompt after 3 mins defaulting to "No/Ignored"
+set -euo pipefail
 
-# Hardcoded Daily Timetable (Format: "HH:MM HH:MM Task Name")
-# Add your schedule here using 24-hour time format.
-readonly TIMETABLE=(
+LOG_FILE="${HOME}/task_log.txt"
+TZ_ZONE="Asia/Kolkata"
+
+# ── Daily Schedule (24-hour times) ─────────────────────────────
+# Format: "HH:MM HH:MM Task Description"
+TIMETABLE=(
     "05:00 05:30 Core Collections"
     "05:30 07:30 DSA Grind"
     "07:30 08:00 Morning Prep"
@@ -25,91 +30,79 @@ readonly TIMETABLE=(
     "00:00 05:00 Deep Sleep/Rest"
 )
 
-# --- HELPER FUNCTIONS ---
-get_ist_time() {
-    TZ='Asia/Kolkata' date +%H:%M
-}
+# ── Get current IST epoch ──────────────────────────────────────
+now_hm=$(TZ="$TZ_ZONE" date +%H:%M)
+now_epoch=$(TZ="$TZ_ZONE" date -d "$now_hm" +%s)
 
-get_ist_day() {
-    TZ='Asia/Kolkata' date +%u # 1=Monday, ... , 6=Saturday, 7=Sunday
-}
+# ── Find current task ──────────────────────────────────────────
+current_task=""
+time_left=0
+next_task=""
+css_class="free"
 
-get_epoch() {
-    TZ='Asia/Kolkata' date -d "$1" +%s
-}
+for i in "${!TIMETABLE[@]}"; do
+    entry="${TIMETABLE[$i]}"
+    start="${entry%% *}"                        # first field
+    rest="${entry#* }"
+    end="${rest%% *}"                            # second field
+    task="${rest#* }"                             # remaining = task name
 
-# --- STATE TRACKING ---
-LAST_ALERT=""
-PROMPT_DONE=""
+    start_epoch=$(TZ="$TZ_ZONE" date -d "$start" +%s 2>/dev/null || echo 0)
+    end_epoch=$(TZ="$TZ_ZONE" date -d "$end" +%s 2>/dev/null || echo 0)
 
-# --- MAIN LOOP ---
-while true; do
-    # 1. Determine Current Task
-    cur_time=$(get_ist_time)
-    cur_epoch=$(get_epoch "$cur_time")
-    
-    current_task=""
-    time_left_mins=0
-    
-    for entry in "${TIMETABLE[@]}"; do
-        start=$(echo "$entry" | cut -d' ' -f1)
-        end=$(echo "$entry" | cut -d' ' -f2)
-        task=$(echo "$entry" | cut -d' ' -f3-)
-        
-        start_epoch=$(get_epoch "$start")
-        end_epoch=$(get_epoch "$end")
-        
-        # Check if the current time falls within this task's block
-        if [[ "$cur_epoch" -ge "$start_epoch" && "$cur_epoch" -lt "$end_epoch" ]]; then
-            current_task="$task"
-            time_left_mins=$(( (end_epoch - cur_epoch) / 60 ))
-            break
+    if (( now_epoch >= start_epoch && now_epoch < end_epoch )); then
+        current_task="$task"
+        time_left=$(( (end_epoch - now_epoch) / 60 ))
+
+        # Determine CSS class based on task type
+        case "$task" in
+            *Break*|*Sleep*|*Dinner*|*Lunch*|*Relax*|*Recharge*)
+                css_class="free"
+                ;;
+            *Contest*|*LeetCode*|*Grind*)
+                css_class="contest"
+                ;;
+            *)
+                css_class="focus"
+                ;;
+        esac
+
+        # Peek at next task for tooltip
+        next_idx=$(( i + 1 ))
+        if (( next_idx < ${#TIMETABLE[@]} )); then
+            next_entry="${TIMETABLE[$next_idx]}"
+            nr="${next_entry#* }"
+            next_task="${nr#* }"
         fi
-    done
+        break
+    fi
+done
 
-    # 2. Handle Task Output and Notifications
-    if [[ -n "$current_task" ]]; then
-        echo "{\"text\": \"$current_task - ${time_left_mins}m left\", \"class\": \"focus\"}"
-        
-        # Send warnings at exactly 10 and 5 minutes remaining
-        if [[ "$time_left_mins" -eq 10 || "$time_left_mins" -eq 5 ]]; then
-            alert_id="${current_task}_${time_left_mins}"
-            if [[ "$LAST_ALERT" != "$alert_id" ]]; then
-                notify-send -u critical "Time is up soon!" "Update your session for: $current_task"
-                LAST_ALERT="$alert_id"
-            fi
-        
-        # Trigger Zenity popup when time is exactly at 0 mins (last minute)
-        elif [[ "$time_left_mins" -eq 0 ]]; then
-            if [[ "$PROMPT_DONE" != "$current_task" ]]; then
-                PROMPT_DONE="$current_task"
-                
-                # Run the popup inside the background `(...) &` so it NEVER hangs Waybar!
-                (
-                    # Zenity returns 0 for yes, 1 for no, 5 for timeout. 
-                    # The --timeout flag defaults to dropping to `else` if ignored.
-                    # _Yes and _No allow for Alt+Y and Alt+N as keyboard shortcuts.
-                    if zenity --question \
-                              --title="Mission Completion Check" \
-                              --text="Did you complete the task: **$current_task**?" \
-                              --ok-label="_Yes (y)" \
-                              --cancel-label="_No (n)" \
-                              --timeout="$ZENITY_TIMEOUT_SECS"; then
-                        echo "$(TZ='Asia/Kolkata' date '+%Y-%m-%d %H:%M') - COMPLETED - $current_task" >> "$LOG_FILE"
-                    else
-                        echo "$(TZ='Asia/Kolkata' date '+%Y-%m-%d %H:%M') - INCOMPLETE/IGNORED - $current_task" >> "$LOG_FILE"
-                    fi
-                ) &
-            fi
-        fi
-        
+# ── Warnings via notify-send (at 5 & 1 min) ───────────────────
+if [[ -n "$current_task" && ( "$time_left" -eq 5 || "$time_left" -eq 1 ) ]]; then
+    notify-send -u critical -i dialog-warning \
+        "⏰ ${time_left}m left" \
+        "Current: $current_task" 2>/dev/null || true
+fi
+
+# ── Generate output ────────────────────────────────────────────
+if [[ -n "$current_task" ]]; then
+    # Format time_left as Xh Ym if over 60 min
+    if (( time_left >= 60 )); then
+        display_time="$((time_left / 60))h $((time_left % 60))m"
     else
-        # No task matched in the timetable
-        echo '{"text": "Free Time", "class": "free"}'
-        LAST_ALERT=""
-        PROMPT_DONE=""
+        display_time="${time_left}m"
     fi
 
-    # Sync sleep ensures the script triggers perfectly at the start of the next minute
-    sleep $((60 - $(date +%S)))
-done
+    # Escape ampersands for Pango markup + JSON
+    safe_task="${current_task//&/&amp;}"
+    safe_next="${next_task//&/&amp;}"
+    text="${safe_task} · ${display_time}"
+    tooltip="📋 ${safe_task}\n⏳ ${display_time} remaining"
+    [[ -n "$next_task" ]] && tooltip="${tooltip}\n➡️ Next: ${safe_next}"
+
+    printf '{"text": "%s", "tooltip": "%s", "class": "%s"}\n' \
+        "$text" "$tooltip" "$css_class"
+else
+    printf '{"text": "☕ Free Time", "tooltip": "No scheduled task right now", "class": "free"}\n'
+fi

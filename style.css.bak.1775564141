@@ -1,0 +1,147 @@
+@import "../omarchy/current/theme/waybar.css";
+
+/* Global Font & Reset */
+* {
+  font-family: 'JetBrainsMono Nerd Font', 'sans-serif';
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Make the main bar transparent to allow for floating pills */
+window#waybar {
+  background-color: transparent;
+}
+
+/* Floating Pill Containers */
+.modules-left,
+.modules-center,
+.modules-right {
+  background-color: @background;
+  color: @foreground;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 4px 8px;
+  margin-top: 4px;
+}
+
+/* Spacing between individual modules inside the pills */
+.modules-left > widget > *,
+.modules-center > widget > *,
+.modules-right > widget > * {
+  padding: 4px 12px;
+  margin: 0 4px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/* Workspace Button Enhancements */
+#workspaces button {
+  padding: 4px 10px;
+  color: @foreground;
+  opacity: 0.6;
+}
+
+#workspaces button.active {
+  opacity: 1;
+  color: #98c379; /* Soft green accent for active workspace */
+  background-color: rgba(152, 195, 121, 0.15);
+  border-radius: 8px;
+}
+
+#workspaces button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+/* Hover effects for interactive modules */
+#pulseaudio:hover,
+#network:hover,
+#battery:hover,
+#clock:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+/* Active Warning States (Using safe hex codes) */
+#custom-screenrecording-indicator.active,
+#custom-voxtype.recording {
+  color: #e06c75;
+  background-color: rgba(224, 108, 117, 0.15);
+  animation: blink 2s linear infinite; /* Pulsing animation for recording */
+}
+
+#custom-idle-indicator.active,
+#custom-notification-silencing-indicator.active {
+  color: #e5c07b; /* Soft yellow warning */
+  background-color: rgba(229, 192, 123, 0.15);
+}
+
+/* Battery Critical State */
+#battery.critical:not(.charging) {
+  color: #e06c75;
+  background-color: rgba(224, 108, 117, 0.15);
+  animation: blink 2s linear infinite;
+}
+
+/* Tray and Expander */
+#tray {
+  margin: 0 8px;
+}
+
+#custom-expand-icon {
+  padding-right: 8px;
+  color: @foreground;
+}
+
+/* Smooth Tooltips */
+tooltip {
+  background-color: @background;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+tooltip label {
+  color: @foreground;
+  font-family: 'JetBrainsMono Nerd Font', 'sans-serif';
+}
+
+/* Animations */
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+  color: #e06c75;
+  background-color: rgba(224, 108, 117, 0.15);
+  border-radius: 6px;
+}
+
+/* Tray Adjustments */
+#tray {
+  margin-right: 8px;
+}
+
+#custom-expand-icon {
+  padding-right: 12px;
+  color: @foreground;
+}
+
+/* Cleaner Tooltips */
+tooltip {
+  background-color: @background;
+  color: @foreground;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+tooltip label {
+  color: @foreground;
+}

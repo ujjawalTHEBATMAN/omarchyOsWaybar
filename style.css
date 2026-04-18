@@ -1,159 +1,216 @@
 @import "../omarchy/current/theme/waybar.css";
 
+/* ═══════════════════════════════════════════════════════════
+   OMARCHY WAYBAR — ELITE GLASSMORPHISM UI
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── DESIGN TOKENS ──────────────────────────────────────── */
+@define-color base-bg rgba(24, 24, 37, 0.75);
+@define-color border-color rgba(255, 255, 255, 0.08);
+@define-color text-color #cdd6f4;
+@define-color accent #89ca78;
+@define-color accent-secondary #89b4fa;
+@define-color hover-bg rgba(255, 255, 255, 0.12);
+@define-color glow-color rgba(137, 180, 250, 0.4);
+@define-color shadow-color rgba(0, 0, 0, 0.4);
+
+@define-color warn #f9e2af;
+@define-color crit #f38ba8;
+@define-color dim #a6adc8;
+
+/* ─── GLOBAL RESET ───────────────────────────────────────── */
 * {
-  background-color: @background;
-  color: @foreground;
-  border: none;
-  border-radius: 0;
-  min-height: 0;
-  font-family: 'Fira Code';
-  font-size: 12px;
+    color: @text-color;
+    font-family: 'JetBrainsMono Nerd Font', 'Roboto', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* === LEFT MODULES === */
-.modules-left {
-  margin-left: 8px;
+window#waybar {
+    background: transparent;
 }
 
-/* === RIGHT MODULES === */
-.modules-right {
-  margin-right: 8px;
+/* ─── FLOATING PILL CONTAINERS ───────────────────────────── */
+.modules-left > widget > box,
+.modules-left > widget > button,
+.modules-center > widget > box,
+.modules-right > widget > box {
+    background-color: @base-bg;
+    border: 1px solid @border-color;
+    border-radius: 20px;
+    margin: 0 5px;
+    box-shadow: 0 4px 10px @shadow-color;
+    padding: 2px 12px; /* Reduced vertical padding */
 }
 
-/* === WORKSPACES === */
+/* ─── HOVER / INTERACTIVE ────────────────────────────────── */
+.modules-left > widget > box:hover,
+.modules-left > widget > button:hover,
+.modules-center > widget > box:hover,
+.modules-right > widget > box:hover {
+    background-color: @hover-bg;
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 15px @shadow-color, 0 0 12px rgba(255, 255, 255, 0.08);
+}
+
+/* ─── APP LAUNCHERS & CUSTOM MODULES ─────────────────────── */
+#custom-omarchy {
+    font-size: 18px;
+    color: @accent-secondary;
+    padding-right: 6px;
+    text-shadow: 0 0 8px @glow-color;
+}
+
+#custom-intellij { color: #fe2857; font-size: 16px; margin: 0 4px; }
+#custom-sql { color: #336791; font-size: 16px; margin: 0 4px; }
+#custom-leetcode { color: #ffa116; font-size: 16px; margin: 0 4px; }
+
+#custom-intellij:hover,
+#custom-sql:hover,
+#custom-leetcode:hover {
+    text-shadow: 0 0 12px @glow-color;
+}
+
+/* ─── WORKSPACES ─────────────────────────────────────────── */
 #workspaces button {
-  all: initial;
-  padding: 0 6px;
-  margin: 0 1.5px;
-  min-width: 9px;
-}
-
-#workspaces button.empty {
-  opacity: 0.5;
+    background: transparent;
+    border-radius: 12px;
+    padding: 0px 5px; /* Reduced vertical padding */
+    margin: 1px 2px;
+    min-width: 28px;
+    color: rgba(255, 255, 255, 0.3);
 }
 
 #workspaces button.active {
-  color: @accent;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: @accent-secondary;
+    text-shadow: 0 0 10px @glow-color;
+    padding: 0px 10px; /* Reduced vertical padding */
 }
 
-/* === SYSTEM MODULES === */
-#cpu,
-#battery,
-#pulseaudio,
-#custom-omarchy,
-#custom-update {
-  min-width: 12px;
-  margin: 0 7.5px;
+#workspaces button:hover {
+    background-color: @hover-bg;
+    color: #ffffff;
 }
 
-/* === TRAY === */
-#tray {
-  margin-right: 16px;
+#workspaces button.urgent {
+    color: @crit;
+    animation: flash 1s ease-in-out infinite alternate;
 }
 
-#bluetooth {
-  margin-right: 17px;
+/* ─── MODULE SPACING & INTERNAL MARGINS ──────────────────── */
+#cpu, #memory, #disk, #backlight, #pulseaudio, #battery, #network, #bluetooth {
+    padding: 0px 6px; /* Reduced vertical padding */
+    margin: 0 2px;
 }
 
-#network {
-  margin-right: 13px;
+/* Group Separators (Hardware & Power) */
+#cpu, #memory, #backlight, #pulseaudio {
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0;
+    padding-right: 12px;
+    margin-right: 6px;
 }
 
-#custom-expand-icon {
-  margin-right: 18px;
-}
-
-/* === TOOLTIPS === */
-tooltip {
-  padding: 2px;
-  border-radius: 4px;
-}
-
-tooltip label {
-  font-size: 11px;
-}
-
-/* === UPDATE INDICATOR === */
-#custom-update {
-  font-size: 10px;
-}
-
-/* === CLOCK - 12 HOUR FORMAT === */
+/* ─── CLOCK ──────────────────────────────────────────────── */
 #clock {
-  margin-left: 8.75px;
-  font-weight: bold;
+    color: @text-color;
+    letter-spacing: 0.5px;
 }
-
 #clock:hover {
-  color: @accent;
+    color: @accent-secondary;
 }
 
-/* === HIDDEN MODULES === */
-.hidden {
-  opacity: 0;
+/* ─── BLUETOOTH & NETWORK ────────────────────────────────── */
+#bluetooth.connected, #network.wifi {
+    color: @accent-secondary;
+    text-shadow: 0 0 8px @glow-color;
 }
 
-/* === INDICATORS === */
-#custom-screenrecording-indicator,
-#custom-idle-indicator,
-#custom-notification-silencing-indicator {
-  min-width: 12px;
-  margin-left: 5px;
-  margin-right: 0;
-  font-size: 10px;
-  padding-bottom: 1px;
+#network.disconnected, #bluetooth.off, #bluetooth.disabled {
+    color: @dim;
+    opacity: 0.6;
 }
 
+/* ─── BATTERY STATES ─────────────────────────────────────── */
+#battery.warning {
+    color: @warn;
+}
+
+#battery.critical {
+    color: @crit;
+    animation: flash 1s ease-in-out infinite alternate;
+}
+
+#battery.charging {
+    color: @accent;
+    text-shadow: 0 0 8px rgba(137, 202, 120, 0.5);
+}
+
+#battery.full {
+    color: #a6e3a1;
+}
+
+/* ─── PULSEAUDIO ─────────────────────────────────────────── */
+#pulseaudio.muted {
+    color: @dim;
+    opacity: 0.6;
+}
+
+/* ─── STATUS INDICATORS ──────────────────────────────────── */
 #custom-screenrecording-indicator.active {
-  color: #a55555;
+    color: @crit;
+    animation: flash 1s ease-in-out infinite alternate;
 }
 
 #custom-idle-indicator.active,
 #custom-notification-silencing-indicator.active {
-  color: #a55555;
-}
-
-/* === VOXTYPE === */
-#custom-voxtype {
-  min-width: 12px;
-  margin: 0 0 0 7.5px;
+    color: @warn;
 }
 
 #custom-voxtype.recording {
-  color: #a55555;
+    color: @crit;
+    animation: flash 1.5s ease-in-out infinite;
 }
 
-/* === BATTERY STATES === */
-#battery.warning {
-  color: #f39c12;
+#custom-voxtype.transcribing {
+    color: @accent-secondary;
+    animation: flash 1.5s ease-in-out infinite;
 }
 
-#battery.critical {
-  color: #e74c3c;
+#custom-update {
+    color: @accent;
 }
 
-/* === NETWORK STATES === */
-#network.disconnected {
-  color: #e74c3c;
+/* ─── TRAY ───────────────────────────────────────────────── */
+#tray {
+    margin: 0 4px;
 }
 
-/* === BLUETOOTH STATES === */
-#bluetooth.off,
-#bluetooth.disabled {
-  color: #7f8c8d;
+/* ─── TOOLTIPS ───────────────────────────────────────────── */
+tooltip {
+    background-color: rgba(24, 24, 37, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
 }
 
-/* === AUDIO MUTED === */
-#pulseaudio.muted {
-  color: #7f8c8d;
+tooltip label {
+    padding: 10px;
+    color: #e0e0e0;
+    font-size: 13px;
+    font-weight: 500;
 }
 
-/* === HOVER EFFECTS === */
-#cpu:hover,
-#battery:hover,
-#pulseaudio:hover,
-#network:hover,
-#bluetooth:hover {
-  color: @accent;
-  cursor: pointer;
+/* ─── ANIMATIONS ─────────────────────────────────────────── */
+@keyframes flash {
+    0%   { opacity: 1; }
+    100% { opacity: 0.4; }
 }

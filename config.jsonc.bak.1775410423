@@ -1,0 +1,245 @@
+{
+    "reload_style_on_change": true,
+    "layer": "top",
+    "position": "top",
+    "height": 34,
+    "spacing": 0,
+    "margin-top": 4,
+    "margin-left": 8,
+    "margin-right": 8,
+    "include": [
+        "~/.config/waybar/modules/custom-modules.jsonc"
+    ],
+    "modules-left": [
+        "custom/omarchy",
+        "hyprland/workspaces"
+    ],
+    "modules-center": [
+        "clock",
+        "custom/timetable"
+    ],
+    "modules-right": [
+        "mpris",
+        "custom/update",
+        "pulseaudio",
+        "cpu",
+        "memory",
+        "temperature",
+        "battery",
+        "network",
+        "bluetooth",
+        "group/ai-hub",
+        "tray",
+        "custom/power"
+    ],
+    "custom/omarchy": {
+        "format": "",
+        "on-click": "omarchy-menu",
+        "on-click-right": "xdg-terminal-exec",
+        "tooltip-format": "Omarchy Menu"
+    },
+    "hyprland/workspaces": {
+        "on-click": "activate",
+        "format": "{icon}",
+        "on-scroll-up": "hyprctl dispatch workspace e+1",
+        "on-scroll-down": "hyprctl dispatch workspace e-1",
+        "format-icons": {
+            "1": "1",
+            "2": "2",
+            "3": "3",
+            "4": "4",
+            "5": "5",
+            "6": "6",
+            "7": "7",
+            "8": "8",
+            "9": "9",
+            "10": "0",
+            "default": "",
+            "active": "󱓻",
+            "urgent": "󰀨"
+        },
+        "persistent-workspaces": {
+            "*": 5
+        },
+        "all-outputs": false
+    },
+    "clock": {
+        "format": "󰥔 {:%I:%M %p}",
+        "format-alt": " {:%A, %d %B %Y}",
+        "tooltip-format": "<big>{:%A, %d %B %Y}</big>\n<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode": "year",
+            "mode-mon-col": 3,
+            "weeks-pos": "right",
+            "on-scroll": 1,
+            "format": {
+                "months": "<span color='#f5c2e7'><b>{}</b></span>",
+                "days": "<span color='#cdd6f4'>{}</span>",
+                "weeks": "<span color='#a6e3a1'><b>W{}</b></span>",
+                "weekdays": "<span color='#fab387'><b>{}</b></span>",
+                "today": "<span color='#f38ba8'><b><u>{}</u></b></span>"
+            }
+        },
+        "timezones": [
+            "Asia/Kolkata",
+            "UTC"
+        ],
+        "actions": {
+            "on-click-right": "tz_up",
+            "on-scroll-up": "shift_up",
+            "on-scroll-down": "shift_down"
+        }
+    },
+    "custom/timetable": {
+        "exec": "~/.config/waybar/scripts/timetable.sh",
+        "return-type": "json",
+        "interval": 30,
+        "tooltip": true,
+        "format": "{}"
+    },
+    "mpris": {
+        "format": "{status_icon} {title}",
+        "format-paused": "{status_icon} <i>{title}</i>",
+        "format-stopped": "",
+        "format-disconnected": "",
+        "max-length": 25,
+        "status-icons": {
+            "playing": "󰐊",
+            "paused": "󰏤",
+            "stopped": "󰓛"
+        },
+        "tooltip-format": "Now Playing\n{title}\n{artist} - {album}",
+        "on-click": "playerctl play-pause",
+        "on-click-right": "playerctl next",
+        "on-click-middle": "playerctl previous",
+        "on-scroll-up": "playerctl volume 0.05+",
+        "on-scroll-down": "playerctl volume 0.05-"
+    },
+    "custom/update": {
+        "format": "",
+        "exec": "omarchy-update-available",
+        "exec-if": "which omarchy-update-available",
+        "on-click": "omarchy-launch-floating-terminal-with-presentation omarchy-update",
+        "tooltip-format": "Update available",
+        "interval": 21600
+    },
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-muted": "󰝟 Mute",
+        "format-icons": {
+            "headphone": "",
+            "headset": "󰋎",
+            "default": [
+                "",
+                "",
+                ""
+            ]
+        },
+        "on-click": "omarchy-launch-audio",
+        "on-click-right": "pamixer -t",
+        "on-scroll-up": "pamixer -i 5",
+        "on-scroll-down": "pamixer -d 5",
+        "scroll-step": 5,
+        "tooltip-format": "Volume: {volume}%"
+    },
+    "cpu": {
+        "format": "󰍛 {usage}%",
+        "interval": 3,
+        "tooltip-format": "CPU: {usage}%\nLoad: {load}",
+        "on-click": "omarchy-launch-or-focus-tui btop"
+    },
+    "memory": {
+        "format": "󰘚 {percentage}%",
+        "interval": 5,
+        "tooltip-format": "RAM: {used:0.1f} GB / {total:0.1f} GB",
+        "on-click": "omarchy-launch-or-focus-tui btop"
+    },
+    "temperature": {
+        "critical-threshold": 80,
+        "format": "{icon} {temperatureC}°C",
+        "format-icons": [
+            "",
+            "",
+            ""
+        ],
+        "interval": 5
+    },
+    "battery": {
+        "states": {
+            "warning": 20,
+            "critical": 10
+        },
+        "format": "{icon} {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
+        "format-plugged": " {capacity}%",
+        "format-full": "󰂅 Full",
+        "format-icons": [
+            "󰁺",
+            "󰁻",
+            "󰁼",
+            "󰁽",
+            "󰁾",
+            "󰁿",
+            "󰂀",
+            "󰂁",
+            "󰂂",
+            "󰁹"
+        ],
+        "tooltip-format": "Capacity: {capacity}%\nTime: {time}\nDraw: {power:.1f} W",
+        "interval": 10,
+        "on-click": "omarchy-menu power"
+    },
+    "network": {
+        "format-wifi": "{icon} {essid}",
+        "format-ethernet": "󰀂 {ipaddr}",
+        "format-disconnected": "󰤮",
+        "format-icons": [
+            "󰤯",
+            "󰤟",
+            "󰤢",
+            "󰤥",
+            "󰤨"
+        ],
+        "tooltip-format-wifi": "SSID: {essid}\nSignal: {signalStrength}%\nIP: {ipaddr}",
+        "tooltip-format-disconnected": "Disconnected",
+        "interval": 5,
+        "on-click": "omarchy-launch-wifi"
+    },
+    "bluetooth": {
+        "format": "",
+        "format-off": "󰂲",
+        "format-disabled": "󰂲",
+        "format-connected": "󰂱 {device_alias}",
+        "tooltip-format": "Devices: {num_connections}",
+        "on-click": "omarchy-launch-bluetooth"
+    },
+    "group/ai-hub": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 400,
+            "children-class": "ai-item",
+            "transition-left-to-right": false
+        },
+        "modules": [
+            "image#chatgpt",
+            "image#gemini",
+            "image#claude",
+            "image#kimi",
+            "image#qwen",
+            "image#deepseek",
+            "image#mistral",
+            "image#copilot",
+            "image#huggingface",
+            "image#blackbox"
+        ]
+    },
+    "tray": {
+        "icon-size": 14,
+        "spacing": 8
+    },
+    "custom/power": {
+        "format": "󰐥",
+        "on-click": "~/.config/waybar/scripts/power-menu.sh",
+        "tooltip-format": "Power Menu"
+    }
+}
