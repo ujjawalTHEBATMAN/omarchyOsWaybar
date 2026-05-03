@@ -1,192 +1,374 @@
 @import "../omarchy/current/theme/waybar.css";
 
 /* ═══════════════════════════════════════════════════════════
-   OMARCHY WAYBAR — ELITE GLASSMORPHISM UI
+   OMARCHY WAYBAR — PREMIUM GLASSMORPHISM UI v2
    ═══════════════════════════════════════════════════════════ */
 
 /* ─── DESIGN TOKENS ──────────────────────────────────────── */
-@define-color base-bg rgba(24, 24, 37, 0.75);
-@define-color border-color rgba(255, 255, 255, 0.08);
+@define-color base-bg rgba(15, 15, 25, 0.82);
+@define-color base-bg-solid rgba(15, 15, 25, 0.95);
+@define-color border-color rgba(255, 255, 255, 0.06);
+@define-color border-hover rgba(137, 180, 250, 0.35);
 @define-color text-color #cdd6f4;
+@define-color text-bright #e4e9f8;
 @define-color accent #89ca78;
 @define-color accent-secondary #89b4fa;
-@define-color hover-bg rgba(255, 255, 255, 0.12);
-@define-color glow-color rgba(137, 180, 250, 0.4);
-@define-color shadow-color rgba(0, 0, 0, 0.4);
+@define-color accent-pink #f5c2e7;
+@define-color accent-peach #fab387;
+@define-color hover-bg rgba(137, 180, 250, 0.10);
+@define-color glow-color rgba(137, 180, 250, 0.35);
+@define-color glow-green rgba(137, 202, 120, 0.35);
+@define-color shadow-color rgba(0, 0, 0, 0.55);
 
 @define-color warn #f9e2af;
 @define-color crit #f38ba8;
-@define-color dim #a6adc8;
+@define-color dim #6c7086;
 
 /* ─── GLOBAL RESET ───────────────────────────────────────── */
 * {
-    color: @text-color;
     font-family: 'JetBrainsMono Nerd Font', 'Roboto', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    border: none;
-    border-radius: 0;
-    min-height: 0;
-    padding: 0;
-    margin: 0;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 window#waybar {
     background: transparent;
 }
 
+/* Base reset */
+.modules-left *,
+.modules-center *,
+.modules-right * {
+    color: @text-color;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 /* ─── FLOATING PILL CONTAINERS ───────────────────────────── */
-.modules-left > widget > box,
-.modules-left > widget > button,
-.modules-center > widget > box,
-.modules-right > widget > box {
-    background-color: @base-bg;
+.modules-left>widget>box,
+.modules-left>widget>button,
+.modules-center>widget>box,
+.modules-right>widget>box {
+    background-color: rgba(20, 20, 35, 0.85);
     border: 1px solid @border-color;
-    border-radius: 20px;
-    margin: 0 5px;
-    box-shadow: 0 4px 10px @shadow-color;
-    padding: 2px 12px; /* Reduced vertical padding */
+    border-radius: 14px;
+    margin: 0 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+    padding: 2px 10px;
 }
 
 /* ─── HOVER / INTERACTIVE ────────────────────────────────── */
-.modules-left > widget > box:hover,
-.modules-left > widget > button:hover,
-.modules-center > widget > box:hover,
-.modules-right > widget > box:hover {
-    background-color: @hover-bg;
-    border-color: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 4px 15px @shadow-color, 0 0 12px rgba(255, 255, 255, 0.08);
+.modules-left>widget>box:hover,
+.modules-left>widget>button:hover,
+.modules-center>widget>box:hover,
+.modules-right>widget>box:hover {
+    background-color: rgba(35, 35, 60, 0.92);
+    border-color: @border-hover;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
-/* ─── APP LAUNCHERS & CUSTOM MODULES ─────────────────────── */
+/* ─── OMARCHY LOGO ───────────────────────────────────────── */
 #custom-omarchy {
     font-size: 18px;
     color: @accent-secondary;
     padding-right: 6px;
-    text-shadow: 0 0 8px @glow-color;
-}
-
-#custom-intellij { color: #fe2857; font-size: 16px; margin: 0 4px; }
-#custom-sql { color: #336791; font-size: 16px; margin: 0 4px; }
-#custom-leetcode { color: #ffa116; font-size: 16px; margin: 0 4px; }
-
-#custom-intellij:hover,
-#custom-sql:hover,
-#custom-leetcode:hover {
     text-shadow: 0 0 12px @glow-color;
 }
 
-/* ─── WORKSPACES ─────────────────────────────────────────── */
+#custom-omarchy:hover {
+    color: @accent-pink;
+    text-shadow: 0 0 14px rgba(245, 194, 231, 0.5);
+}
+
+/* ─── WORKSPACES — UNIQUELY MARKED STATES ────────────────── */
+#workspaces {
+    padding: 0;
+}
+
 #workspaces button {
     background: transparent;
-    border-radius: 12px;
-    padding: 0px 5px; /* Reduced vertical padding */
-    margin: 1px 2px;
-    min-width: 28px;
-    color: rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 2px 8px;
+    margin: 2px 2px;
+    min-width: 30px;
+    color: @dim;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    border: 1px solid transparent;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+/* ═══ STATE: EMPTY — ghost / invisible feel ═══ */
+#workspaces button.empty {
+    background: rgba(15, 15, 25, 0.15);
+    color: rgba(108, 112, 134, 0.30);
+    min-width: 26px;
+    padding: 2px 6px;
+    font-size: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-bottom: 2px solid transparent;
+    opacity: 0.6;
+}
+
+/* ═══ STATE: OCCUPIED — soft presence, dot marker ═══ */
+#workspaces button.occupied {
+    background: rgba(30, 30, 55, 0.50);
+    color: @accent-pink;
+    border: 1px solid rgba(245, 194, 231, 0.10);
+    border-bottom: 2px solid rgba(245, 194, 231, 0.35);
+    padding: 2px 9px;
+    min-width: 30px;
+    font-weight: 600;
+    text-shadow: 0 0 6px rgba(245, 194, 231, 0.15);
+}
+
+/* ═══ STATE: ACTIVE — hero glow, diamond marker ═══ */
 #workspaces button.active {
-    background-color: rgba(255, 255, 255, 0.15);
+    background: linear-gradient(
+        135deg,
+        rgba(137, 180, 250, 0.20) 0%,
+        rgba(180, 190, 254, 0.14) 50%,
+        rgba(137, 180, 250, 0.10) 100%
+    );
     color: @accent-secondary;
-    text-shadow: 0 0 10px @glow-color;
-    padding: 0px 10px; /* Reduced vertical padding */
+    text-shadow: 0 0 14px @glow-color;
+    padding: 2px 12px;
+    min-width: 38px;
+    border: 1px solid rgba(137, 180, 250, 0.22);
+    border-bottom: 2px solid rgba(137, 180, 250, 0.70);
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(137, 180, 250, 0.15),
+                0 0 20px rgba(137, 180, 250, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
 }
 
+/* ─── HOVER STATES ─── */
 #workspaces button:hover {
-    background-color: @hover-bg;
-    color: #ffffff;
+    background: rgba(137, 180, 250, 0.10);
+    color: @text-bright;
+    border-color: rgba(137, 180, 250, 0.12);
+    border-bottom-color: rgba(137, 180, 250, 0.25);
 }
 
+#workspaces button.active:hover {
+    background: linear-gradient(
+        135deg,
+        rgba(137, 180, 250, 0.28) 0%,
+        rgba(180, 190, 254, 0.20) 50%,
+        rgba(137, 180, 250, 0.14) 100%
+    );
+    border-color: rgba(137, 180, 250, 0.35);
+    border-bottom-color: rgba(137, 180, 250, 0.85);
+    box-shadow: 0 2px 18px rgba(137, 180, 250, 0.22),
+                0 0 30px rgba(137, 180, 250, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+#workspaces button.occupied:hover {
+    background: rgba(40, 35, 65, 0.65);
+    color: @accent-pink;
+    border-color: rgba(245, 194, 231, 0.18);
+    border-bottom-color: rgba(245, 194, 231, 0.50);
+    text-shadow: 0 0 10px rgba(245, 194, 231, 0.25);
+}
+
+#workspaces button.empty:hover {
+    background: rgba(30, 30, 50, 0.30);
+    color: rgba(108, 112, 134, 0.55);
+    opacity: 0.85;
+    border-bottom-color: rgba(108, 112, 134, 0.15);
+}
+
+/* ═══ STATE: URGENT — red pulse, warning marker ═══ */
 #workspaces button.urgent {
     color: @crit;
-    animation: flash 1s ease-in-out infinite alternate;
+    background: rgba(243, 139, 168, 0.10);
+    border: 1px solid rgba(243, 139, 168, 0.25);
+    border-bottom: 2px solid rgba(243, 139, 168, 0.60);
+    box-shadow: 0 0 14px rgba(243, 139, 168, 0.15);
+    text-shadow: 0 0 8px rgba(243, 139, 168, 0.30);
+    animation: pulse-urgent 1.2s ease-in-out infinite;
 }
 
 /* ─── MODULE SPACING & INTERNAL MARGINS ──────────────────── */
-#cpu, #memory, #disk, #backlight, #pulseaudio, #battery, #network, #bluetooth {
-    padding: 0px 6px; /* Reduced vertical padding */
+#cpu,
+#memory,
+#disk,
+#backlight,
+#pulseaudio,
+#battery,
+#network,
+#bluetooth {
+    padding: 0px 6px;
     margin: 0 2px;
 }
 
-/* Group Separators (Hardware & Power) */
-#cpu, #memory, #backlight, #pulseaudio {
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+/* Group Separators */
+#cpu,
+#memory,
+#backlight,
+#pulseaudio {
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 0;
-    padding-right: 12px;
-    margin-right: 6px;
+    padding-right: 10px;
+    margin-right: 5px;
+}
+
+/* ─── HARDWARE MODULE ACCENT COLORS ──────────────────────── */
+#cpu {
+    color: @accent-secondary;
+}
+
+#memory {
+    color: @accent-pink;
+}
+
+#disk {
+    color: @accent-peach;
+}
+
+/* ─── POWER MODULE ACCENTS ───────────────────────────────── */
+#backlight {
+    color: @warn;
+}
+
+/* ─── MUSIC PLAYER ───────────────────────────────────────── */
+#custom-music-prev,
+#custom-music-next {
+    font-size: 13px;
+    color: @dim;
+    padding: 0 4px;
+}
+
+#custom-music-prev:hover,
+#custom-music-next:hover {
+    color: @accent-secondary;
+    text-shadow: 0 0 10px @glow-color;
+}
+
+#custom-music-play {
+    color: @text-color;
+    padding: 0 8px;
+    min-width: 140px;
+}
+
+#custom-music-play.playing {
+    color: @accent;
+    text-shadow: 0 0 10px @glow-green;
+}
+
+#custom-music-play.paused {
+    color: @warn;
+    opacity: 0.85;
+}
+
+#custom-music-play.stopped {
+    color: @dim;
+}
+
+#custom-music-play:hover {
+    color: @accent-secondary;
 }
 
 /* ─── CLOCK ──────────────────────────────────────────────── */
 #clock {
-    color: @text-color;
-    letter-spacing: 0.5px;
+    color: @text-bright;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-shadow: 0 0 6px rgba(205, 214, 244, 0.15);
 }
+
 #clock:hover {
     color: @accent-secondary;
+    text-shadow: 0 0 14px @glow-color;
 }
 
 /* ─── BLUETOOTH & NETWORK ────────────────────────────────── */
-#bluetooth.connected, #network.wifi {
+#bluetooth.connected,
+#network.wifi {
     color: @accent-secondary;
     text-shadow: 0 0 8px @glow-color;
 }
 
-#network.disconnected, #bluetooth.off, #bluetooth.disabled {
+#network.disconnected,
+#bluetooth.off,
+#bluetooth.disabled {
     color: @dim;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 /* ─── BATTERY STATES ─────────────────────────────────────── */
+#battery {
+    color: @accent;
+}
+
 #battery.warning {
     color: @warn;
+    text-shadow: 0 0 6px rgba(249, 226, 175, 0.3);
 }
 
 #battery.critical {
     color: @crit;
-    animation: flash 1s ease-in-out infinite alternate;
+    text-shadow: 0 0 8px rgba(243, 139, 168, 0.4);
+    animation: pulse-urgent 1s ease-in-out infinite;
 }
 
 #battery.charging {
     color: @accent;
-    text-shadow: 0 0 8px rgba(137, 202, 120, 0.5);
+    text-shadow: 0 0 10px @glow-green;
 }
 
 #battery.full {
     color: #a6e3a1;
+    text-shadow: 0 0 6px rgba(166, 227, 161, 0.3);
 }
 
 /* ─── PULSEAUDIO ─────────────────────────────────────────── */
+#pulseaudio {
+    color: @accent-peach;
+}
+
 #pulseaudio.muted {
     color: @dim;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 /* ─── STATUS INDICATORS ──────────────────────────────────── */
 #custom-screenrecording-indicator.active {
     color: @crit;
-    animation: flash 1s ease-in-out infinite alternate;
+    animation: pulse-urgent 1s ease-in-out infinite;
 }
 
 #custom-idle-indicator.active,
 #custom-notification-silencing-indicator.active {
     color: @warn;
+    text-shadow: 0 0 6px rgba(249, 226, 175, 0.3);
 }
 
 #custom-voxtype.recording {
     color: @crit;
-    animation: flash 1.5s ease-in-out infinite;
+    animation: pulse-glow 1.5s ease-in-out infinite;
 }
 
 #custom-voxtype.transcribing {
     color: @accent-secondary;
-    animation: flash 1.5s ease-in-out infinite;
+    animation: pulse-glow 1.5s ease-in-out infinite;
 }
 
 #custom-update {
     color: @accent;
+    text-shadow: 0 0 6px @glow-green;
 }
 
 /* ─── TRAY ───────────────────────────────────────────────── */
@@ -194,23 +376,66 @@ window#waybar {
     margin: 0 4px;
 }
 
+#custom-expand-icon {
+    color: @dim;
+    font-size: 10px;
+}
+
+#custom-expand-icon:hover {
+    color: @accent-secondary;
+}
+
+/* ─── CP QUESTION LAUNCHER ───────────────────────────────── */
+#custom-cp-question {
+    font-size: 12px;
+    font-weight: 700;
+    color: #94e2d5;
+    padding: 2px 12px;
+    margin: 0 2px;
+    letter-spacing: 0.6px;
+    text-shadow: 0 0 8px rgba(148, 226, 213, 0.30);
+}
+
+#custom-cp-question:hover {
+    color: #f5e0dc;
+    font-size: 13px;
+    text-shadow: 0 0 14px rgba(245, 224, 220, 0.45),
+                 0 0 28px rgba(148, 226, 213, 0.25);
+}
+
 /* ─── TOOLTIPS ───────────────────────────────────────────── */
 tooltip {
-    background-color: rgba(24, 24, 37, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background-color: rgba(15, 15, 28, 0.94);
+    border: 1px solid rgba(137, 180, 250, 0.18);
     border-radius: 14px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+    padding: 4px;
 }
 
 tooltip label {
-    padding: 10px;
-    color: #e0e0e0;
-    font-size: 13px;
+    padding: 8px 14px;
+    color: @text-color;
+    font-size: 12px;
     font-weight: 500;
+    letter-spacing: 0.4px;
+    font-family: 'JetBrainsMono Nerd Font', 'Roboto', sans-serif;
 }
 
 /* ─── ANIMATIONS ─────────────────────────────────────────── */
-@keyframes flash {
-    0%   { opacity: 1; }
-    100% { opacity: 0.4; }
+@keyframes pulse-urgent {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0.35;
+    }
+}
+
+@keyframes pulse-glow {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0.5;
+    }
 }

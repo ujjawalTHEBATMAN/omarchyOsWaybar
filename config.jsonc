@@ -3,16 +3,15 @@
   "layer": "top",
   "position": "top",
   "spacing": 0,
-  "height": 30,
+  "height": 34,
   "margin-top": 6,
   "margin-left": 10,
   "margin-right": 10,
   "margin-bottom": 0,
-
   "modules-left": [
     "custom/omarchy",
     "hyprland/workspaces",
-    "group/launchers"
+    "group/music"
   ],
   "modules-center": [
     "clock"
@@ -22,17 +21,10 @@
     "group/tray-expander",
     "group/connectivity",
     "group/hardware",
-    "group/power"
+    "group/power",
+    "custom/cp-question"
   ],
 
-  "group/launchers": {
-    "orientation": "horizontal",
-    "modules": [
-      "custom/intellij",
-      "custom/sql",
-      "custom/leetcode"
-    ]
-  },
   "group/connectivity": {
     "orientation": "horizontal",
     "modules": [
@@ -66,16 +58,16 @@
       "battery"
     ]
   },
-
   "hyprland/workspaces": {
     "on-click": "activate",
     "active-only": false,
     "all-outputs": true,
-    "format": "{icon}",
+    "format": "{icon} {name}",
     "format-icons": {
-      "default": "",
-      "active": "",
-      "urgent": ""
+      "default": "○",
+      "active": "◆",
+      "occupied": "●",
+      "urgent": "◈"
     },
     "persistent-workspaces": {
       "1": [],
@@ -85,18 +77,12 @@
       "5": []
     }
   },
-
-  "custom/intellij": { "format": "", "on-click": "idea", "tooltip-format": "IntelliJ IDEA" },
-  "custom/sql": { "format": "", "on-click": "datagrip", "tooltip-format": "SQL Workstation" },
-  "custom/leetcode": { "format": "󰲋", "on-click": "xdg-open https://leetcode.com/u/ujjawalMvishwakarma/", "tooltip-format": "LeetCode Profile" },
-
   "custom/omarchy": {
     "format": "<span font='omarchy'>\ue900</span>",
     "on-click": "omarchy-menu",
     "on-click-right": "xdg-terminal-exec",
     "tooltip-format": "Omarchy Menu\n\nSuper + Alt + Space"
   },
-
   "custom/update": {
     "format": " ",
     "exec": "omarchy-update-available",
@@ -105,82 +91,101 @@
     "signal": 7,
     "interval": 21600
   },
-
   "disk": {
     "interval": 30,
     "format": "󰋊 {percentage_used}%",
-    "tooltip-format": "Storage: {used} / {total} ({percentage_used}%)\nMount: {path}",
+    "tooltip-format": "󰋊  Storage: {used} / {total} ({percentage_used}%)\n󰝰  Mount: {path}",
     "on-click": "omarchy-launch-or-focus-tui btop"
   },
   "memory": {
     "interval": 10,
     "format": "  {percentage}%",
-    "tooltip-format": "RAM: {used:0.1f}GB / {total:0.1f}GB ({percentage}%)\nSwap: {swapUsed:0.1f}GB / {swapTotal:0.1f}GB ({swapPercentage}%)",
+    "tooltip-format": "  RAM: {used:0.1f}GB / {total:0.1f}GB ({percentage}%)\n󰓡  Swap: {swapUsed:0.1f}GB / {swapTotal:0.1f}GB ({swapPercentage}%)",
     "on-click": "omarchy-launch-or-focus-tui btop"
   },
   "cpu": {
     "interval": 5,
     "format": "  {usage}%",
-    "tooltip-format": "CPU Usage: {usage}%\nFrequency: {avg_frequency}GHz\nLoad: {load}",
+    "tooltip-format": "  CPU Usage: {usage}%\n󰓅  Frequency: {avg_frequency}GHz\n󰍛  Load: {load}",
     "on-click": "omarchy-launch-or-focus-tui btop",
     "on-click-right": "omarchy-launch-or-focus-tui btop"
   },
-
   "clock": {
     "format": "  {:%I:%M %p}",
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
     "format-alt": "  {:%a, %d %b %Y}",
     "interval": 1
   },
-
   "network": {
-    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+    "format-icons": [
+      "󰤯",
+      "󰤟",
+      "󰤢",
+      "󰤥",
+      "󰤨"
+    ],
     "format-wifi": "{icon} {essid}",
     "format-ethernet": "󰀂  {ipaddr}",
     "format-disconnected": "󰤮",
-    "tooltip-format-wifi": "WiFi: {essid} ({signalStrength}%)\nSpeed: ↓{bandwidthDownBytes} ↑{bandwidthUpBytes}",
-    "tooltip-format-ethernet": "Ethernet: {ipaddr}\nSpeed: ↓{bandwidthDownBytes} ↑{bandwidthUpBytes}",
-    "tooltip-format-disconnected": "Disconnected",
+    "tooltip-format-wifi": "󰤨   WiFi: {essid} ({signalStrength}%)\n󰇨   ↓ {bandwidthDownBits}   󰇚   ↑ {bandwidthUpBits}",
+    "tooltip-format-ethernet": "󰈀   Ethernet: {ipaddr}\n󰇨   ↓ {bandwidthDownBits}   󰇚   ↑ {bandwidthUpBits}",
+    "tooltip-format-disconnected": "󰤮   Disconnected",
     "interval": 2,
     "on-click": "omarchy-launch-wifi"
   },
-
   "battery": {
     "format": "{icon} {capacity}%",
     "format-discharging": "{icon} {capacity}%",
     "format-charging": "󰂄 {capacity}%",
     "format-plugged": " {capacity}%",
     "format-full": "󰂅 {capacity}%",
-    "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
-    "tooltip-format-discharging": "Discharging — {time} remaining\nDraw: {power:>1.1f}W ↓  |  Capacity: {capacity}%",
-    "tooltip-format-charging": "Charging — {time} until full\nInput: {power:>1.1f}W ↑  |  Capacity: {capacity}%",
-    "tooltip-format-full": "Fully Charged",
-    "tooltip-format-plugged": "Plugged In — {capacity}%",
+    "format-icons": [
+      "󰁺",
+      "󰁻",
+      "󰁼",
+      "󰁽",
+      "󰁾",
+      "󰁿",
+      "󰂀",
+      "󰂁",
+      "󰂂",
+      "󰁹"
+    ],
+    "tooltip-format-discharging": "󰁹  Discharging — {time} remaining\n󰚥  Draw: {power:>1.1f}W ↓  |  Capacity: {capacity}%",
+    "tooltip-format-charging": "󰂄  Charging — {time} until full\n󰚥  Input: {power:>1.1f}W ↑  |  Capacity: {capacity}%",
+    "tooltip-format-full": "󰂅  Fully Charged",
+    "tooltip-format-plugged": "  Plugged In — {capacity}%",
     "interval": 5,
     "on-click": "omarchy-menu power",
     "on-click-right": "~/.config/waybar/scripts/extreme-battery.sh toggle",
-    "states": { "warning": 20, "critical": 10 }
+    "states": {
+      "warning": 20,
+      "critical": 10
+    }
   },
-
   "backlight": {
     "format": "{icon} {percent}%",
-    "format-icons": ["󰃞", "󰃟", "󰃠"],
+    "format-icons": [
+      "󰃞",
+      "󰃟",
+      "󰃠"
+    ],
     "tooltip-format": "Brightness: {percent}%",
     "on-scroll-up": "brightnessctl set +5%",
     "on-scroll-down": "brightnessctl set 5%-"
   },
-
   "bluetooth": {
     "format": "",
     "format-on": "󰂯",
     "format-off": "󰂲",
     "format-disabled": "󰂲",
     "format-connected": "󰂱 {device_alias}",
-    "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
-    "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
+    "tooltip-format": "󰂯  {controller_alias}\t{controller_address}\n\n󰂰  {num_connections} connected",
+    "tooltip-format-connected": "󰂱  {controller_alias}\t{controller_address}\n\n󰂰  {num_connections} connected\n\n{device_enumerate}",
+    "tooltip-format-enumerate-connected": "󰂯  {device_alias}\t{device_address}",
+    "tooltip-format-enumerate-connected-battery": "󰂯  {device_alias}\t{device_address}\t󰥉  {device_battery_percentage}%",
     "on-click": "omarchy-launch-bluetooth"
   },
-
   "pulseaudio": {
     "format": "{icon} {volume}%",
     "format-muted": "  Muted",
@@ -191,10 +196,13 @@
     "format-icons": {
       "headphone": "",
       "headset": "",
-      "default": ["", "", ""]
+      "default": [
+        "",
+        "",
+        ""
+      ]
     }
   },
-
   "group/tray-expander": {
     "orientation": "inherit",
     "drawer": {
@@ -210,7 +218,6 @@
     "format": "",
     "tooltip": false
   },
-
   "custom/screenrecording-indicator": {
     "on-click": "omarchy-cmd-screenrecord",
     "exec": "$OMARCHY_PATH/default/waybar/indicators/screen-recording.sh",
@@ -229,19 +236,69 @@
     "signal": 10,
     "return-type": "json"
   },
-
   "custom/voxtype": {
     "exec": "omarchy-voxtype-status",
     "return-type": "json",
     "format": "{icon}",
-    "format-icons": { "idle": "󰍽", "recording": "󰍬", "transcribing": "󰔟" },
+    "format-icons": {
+      "idle": "󰍽",
+      "recording": "󰍬",
+      "transcribing": "󰔟"
+    },
     "tooltip": true,
     "on-click-right": "omarchy-voxtype-config",
     "on-click": "omarchy-voxtype-model"
   },
-
   "tray": {
     "icon-size": 14,
     "spacing": 10
+  },
+  "group/music": {
+    "orientation": "horizontal",
+    "modules": [
+      "custom/music-prev",
+      "custom/music-play",
+      "custom/music-next"
+    ]
+  },
+  "custom/music-prev": {
+    "format": "󰒮",
+    "on-click": "~/.config/waybar/scripts/music-autoplay.sh prev",
+    "on-click-right": "~/.config/waybar/scripts/music-autoplay.sh seek-back",
+    "tooltip": false
+  },
+  "custom/music-play": {
+    "exec": "~/.config/waybar/scripts/music-autoplay.sh status",
+    "return-type": "json",
+    "on-click": "~/.config/waybar/scripts/music-autoplay.sh toggle",
+    "on-click-right": "~/.config/waybar/scripts/music-autoplay.sh cycle-player",
+    "on-click-middle": "~/.config/waybar/scripts/music-autoplay.sh stop",
+    "on-scroll-up": "~/.config/waybar/scripts/music-autoplay.sh vol-up",
+    "on-scroll-down": "~/.config/waybar/scripts/music-autoplay.sh vol-down",
+    "signal": 12,
+    "interval": 5,
+    "format": "{icon}  {text}",
+    "format-icons": {
+      "playing": "󰎈",
+      "paused": "󰏤",
+      "stopped": "󰐊"
+    },
+    "max-length": 28,
+    "tooltip": true
+  },
+  "custom/music-next": {
+    "format": "󰒭",
+    "on-click": "~/.config/waybar/scripts/music-autoplay.sh next",
+    "on-click-right": "~/.config/waybar/scripts/music-autoplay.sh seek-forward",
+    "tooltip": false
+  },
+  "custom/cp-question": {
+    "exec": "~/.config/waybar/scripts/cp-question.sh --status",
+    "return-type": "json",
+    "format": "  CP",
+    "on-click": "~/.config/waybar/scripts/cp-question.sh",
+    "on-click-right": "~/.config/waybar/scripts/cp-question.sh --contest",
+    "tooltip": true,
+    "interval": 60
   }
 }

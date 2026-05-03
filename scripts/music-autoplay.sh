@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
-# Waybar Music Controller
-# Features:
-# - Unified controls for MPRIS players + local mpv fallback
-# - Shuffle queue from ~/Music
-# - Player cycling, mode switching, seek and volume actions
-# - Rich JSON status for Waybar custom modules
+# Waybar Music Controller — v3 (stable)
+# Fixed: race-condition auto-next, cascading track switches, PID tracking
+#
+# Controls:
+#   toggle/play-pause  — Play / Pause (left click on play)
+#   next / prev        — Next / Previous track
+#   stop               — Stop everything
+#   shuffle             — Rebuild & shuffle queue
+#   cycle-player       — Cycle MPRIS players
+#   mode [auto|mpris|local] — Switch mode
+#   seek-forward / seek-back
+#   vol-up / vol-down
+#   status / status-prev / status-next  — JSON for waybar
 
 set -u
 
@@ -15,13 +22,16 @@ INDEX_FILE="$STATE_DIR/index"
 CURRENT_TRACK_FILE="$STATE_DIR/current_track"
 MODE_FILE="$STATE_DIR/mode"
 PREFERRED_PLAYER_FILE="$STATE_DIR/preferred_player"
-SIGNAL=8
+PID_FILE="$STATE_DIR/mpv.pid"
+LOCK_FILE="$STATE_DIR/action.lock"
+SIGNAL=12
 MAX_LABEL_LEN=22
 SEEK_STEP="${WAYBAR_MUSIC_SEEK_STEP:-10}"
 VOLUME_STEP="${WAYBAR_MUSIC_VOLUME_STEP:-0.05}"
-LOCAL_MPV_PATTERN='mpv.*waybar-music-player'
 
 mkdir -p "$STATE_DIR"
+
+# ---------- Utilities ----------
 
 trigger_update() {
   pkill -RTMIN+"$SIGNAL" waybar 2>/dev/null || true
@@ -46,10 +56,37 @@ trim_label() {
   fi
 }
 
+# Simple lock to prevent concurrent next/prev/toggle from piling up
+acquire_lock() {
+  local attempts=0
+  while [ -f "$LOCK_FILE" ]; do
+    # Check if the lock is stale (older than 5 seconds)
+    if [ -f "$LOCK_FILE" ]; then
+      local lock_age
+      lock_age=$(( $(date +%s) - $(stat -c %Y "$LOCK_FILE" 2>/dev/null || echo 0) ))
+      if [ "$lock_age" -gt 5 ]; then
+        rm -f "$LOCK_FILE"
+        break
+      fi
+    fi
+    attempts=$((attempts + 1))
+    if [ "$attempts" -gt 10 ]; then
+      return 1  # Give up — another action is running
+    fi
+    sleep 0.1
+  done
+  touch "$LOCK_FILE"
+  return 0
+}
+
+release_lock() {
+  rm -f "$LOCK_FILE"
+}
+
 # ---------- Local queue helpers ----------
 
 get_music_files() {
-  find "$MUSIC_DIR" -type f \( \
+  find "$MUSIC_DIR" -maxdepth 1 -type f \( \
     -iname "*.mp3" -o -iname "*.flac" -o -iname "*.wav" -o \
     -iname "*.ogg" -o -iname "*.m4a" -o -iname "*.aac" -o \
     -iname "*.opus" -o -iname "*.wma" \
@@ -99,7 +136,8 @@ has_playerctl() {
 
 list_players() {
   has_playerctl || return 0
-  playerctl -l 2>/dev/null | sort -u
+  # Filter out our own mpv instance — it registers as MPRIS "mpv"
+  playerctl -l 2>/dev/null | grep -v '^mpv' | sort -u
 }
 
 player_status() {
@@ -138,12 +176,33 @@ pick_external_player() {
   done < <(list_players)
 }
 
+# ---------- Local mpv management (PID-based, subshell wrapper) ----------
+
 is_local_running() {
-  pgrep -f "$LOCAL_MPV_PATTERN" >/dev/null 2>&1
+  local pid
+  pid="$(cat "$PID_FILE" 2>/dev/null || true)"
+  [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null
 }
 
 stop_local() {
-  pkill -f "$LOCAL_MPV_PATTERN" 2>/dev/null || true
+  local pid
+  pid="$(cat "$PID_FILE" 2>/dev/null || true)"
+  if [ -n "$pid" ]; then
+    # Kill children first (mpv running inside the subshell)
+    pkill -P "$pid" 2>/dev/null || true
+    # Then kill the subshell itself
+    kill "$pid" 2>/dev/null || true
+    # Brief wait
+    local i=0
+    while kill -0 "$pid" 2>/dev/null && [ "$i" -lt 10 ]; do
+      sleep 0.05
+      i=$((i + 1))
+    done
+    # Force kill if still alive
+    kill -9 "$pid" 2>/dev/null || true
+    pkill -9 -P "$pid" 2>/dev/null || true
+  fi
+  rm -f "$PID_FILE"
 }
 
 current_mode() {
@@ -222,26 +281,87 @@ play_local_track() {
     return 1
   fi
 
+  # Kill any existing local playback FIRST
   stop_local
+
+  # Write the track we're about to play
   echo "$track" > "$CURRENT_TRACK_FILE"
 
-  nohup mpv \
-    --audio-display=no \
-    --force-window=no \
-    --no-video \
-    --really-quiet \
-    --title="waybar-music-player" \
-    "$track" >/dev/null 2>&1 &
+  local script_path="$0"
+
+  # Run mpv inside a SINGLE detached subshell.
+  # mpv runs in foreground WITHIN the subshell, so:
+  # - The subshell stays alive as long as mpv plays
+  # - Killing the subshell's children (pkill -P) kills mpv
+  # - disown detaches it from waybar's process group
+  (
+    mpv \
+      --audio-display=no \
+      --force-window=no \
+      --no-video \
+      --really-quiet \
+      --title="waybar-music-player" \
+      "$track" >/dev/null 2>&1
+
+    mpv_exit=$?
+
+    # Auto-advance only if:
+    # 1. We are still the tracked subshell (not replaced by next/prev)
+    # 2. mpv exited normally (code 0 = song finished, not killed)
+    current_pid="$(cat "$PID_FILE" 2>/dev/null || true)"
+    if [ "$current_pid" = "$BASHPID" ] && [ "$mpv_exit" -eq 0 ]; then
+      sleep 0.3
+      current_pid="$(cat "$PID_FILE" 2>/dev/null || true)"
+      if [ "$current_pid" = "$BASHPID" ]; then
+        "$script_path" _auto_next
+      fi
+    fi
+  ) </dev/null >/dev/null 2>&1 &
+
+  local subshell_pid=$!
+  echo "$subshell_pid" > "$PID_FILE"
+  disown "$subshell_pid" 2>/dev/null || true
 
   local title
   title="$(basename "$track")"
   title="${title%.*}"
   notify "Now Playing" "$(trim_label "$title")" 2200
+
+  trigger_update
   return 0
 }
 
-play_local_random() {
+# Internal command: auto-advance to next track (called only by the watcher)
+do_auto_next() {
+  if ! acquire_lock; then
+    return 0  # Someone else is already doing something, skip
+  fi
+
   ensure_queue
+  local idx total track
+  total="$(queue_total)"
+  if [ "$total" -le 0 ]; then
+    release_lock
+    return 0
+  fi
+
+  idx="$(queue_index)"
+  idx=$((idx + 1))
+  if [ "$idx" -gt "$total" ]; then
+    idx=1  # Loop back
+  fi
+  echo "$idx" > "$INDEX_FILE"
+
+  track="$(queue_track_at "$idx")"
+  release_lock
+
+  if [ -n "$track" ] && [ -f "$track" ]; then
+    play_local_track "$track"
+  fi
+}
+
+play_local_random() {
+  build_queue
   local total idx track
   total="$(queue_total)"
   if [ "$total" -eq 0 ]; then
@@ -267,6 +387,10 @@ local_next() {
   echo "$idx" > "$INDEX_FILE"
 
   track="$(queue_track_at "$idx")"
+  if [ ! -f "$track" ]; then
+    play_local_random
+    return
+  fi
   play_local_track "$track"
 }
 
@@ -282,6 +406,10 @@ local_prev() {
   echo "$idx" > "$INDEX_FILE"
 
   track="$(queue_track_at "$idx")"
+  if [ ! -f "$track" ]; then
+    play_local_random
+    return
+  fi
   play_local_track "$track"
 }
 
@@ -324,32 +452,42 @@ toggle_play_pause() {
 }
 
 play_next() {
+  if ! acquire_lock; then
+    return 0  # Already handling an action
+  fi
+
   local target player
   target="$(active_target)"
 
   case "$target" in
-    local) local_next ;;
+    local) release_lock; local_next ;;
     mpris:*)
       player="${target#mpris:}"
       external_do "$player" next || notify "Music" "Unable to skip next" 1400
+      release_lock
       ;;
-    *) local_next ;;
+    *) release_lock; local_next ;;
   esac
 
   trigger_update
 }
 
 play_prev() {
+  if ! acquire_lock; then
+    return 0
+  fi
+
   local target player
   target="$(active_target)"
 
   case "$target" in
-    local) local_prev ;;
+    local) release_lock; local_prev ;;
     mpris:*)
       player="${target#mpris:}"
       external_do "$player" previous || notify "Music" "Unable to go previous" 1400
+      release_lock
       ;;
-    *) local_prev ;;
+    *) release_lock; local_prev ;;
   esac
 
   trigger_update
@@ -415,7 +553,7 @@ volume_by() {
       external_do "$player" volume "$arg" || notify "Music" "Volume control unsupported for $player" 1400
       ;;
     *)
-      # Fallback to system sink volume when no MPRIS target is active.
+      # Fallback to system sink volume
       if command -v pactl >/dev/null 2>&1; then
         if [ "$direction" = "up" ]; then
           pactl set-sink-volume @DEFAULT_SINK@ +5% >/dev/null 2>&1 || true
@@ -511,13 +649,10 @@ local_track_label() {
 
 external_label() {
   local player="$1"
-  local artist title
-  artist="$(playerctl --player="$player" metadata artist 2>/dev/null || true)"
+  local title
   title="$(playerctl --player="$player" metadata title 2>/dev/null || true)"
 
-  if [ -n "$artist" ] && [ -n "$title" ]; then
-    printf '%s - %s' "$artist" "$title"
-  elif [ -n "$title" ]; then
+  if [ -n "$title" ]; then
     printf '%s' "$title"
   else
     printf '%s' "$player"
@@ -525,17 +660,18 @@ external_label() {
 }
 
 get_playpause_status() {
-  local target mode total status icon class tooltip player label
+
+  local target mode total status alt class tooltip player label display
   target="$(active_target)"
   mode="$(mode_tag)"
   total="$(music_count)"
 
   case "$target" in
     local)
-      icon="󰎈"
-      class="playing local"
+      alt="playing"
+      class="playing"
       label="$(local_track_label)"
-      tooltip="Mode: $mode\nLocal playback\nTrack: $label\n\nLeft: Play/Pause\nRight: Shuffle queue\nMiddle: Stop\nScroll: Volume" 
+      tooltip="  Mode: $mode (Local)\n󰎆  Track: $label\n\n  Mouse Controls:\n  • Left Click: Play/Pause\n  • Right Click: Cycle Player\n  • Middle Click: Stop All\n  • Scroll: Volume Up/Down\n\n󰒮 / 󰒭 Controls:\n  • Left Click: Prev/Next\n  • Right Click: Seek -/+"
       ;;
     mpris:*)
       player="${target#mpris:}"
@@ -543,26 +679,28 @@ get_playpause_status() {
       label="$(external_label "$player")"
 
       if [ "$status" = "Paused" ]; then
-        icon="󰐊"
-        class="paused mpris"
+        alt="paused"
+        class="paused"
       else
-        icon="󰎈"
-        class="playing mpris"
+        alt="playing"
+        class="playing"
       fi
 
-      tooltip="Mode: $mode\nPlayer: $player ($status)\nNow: $label\n\nLeft: Play/Pause\nRight: Shuffle local queue\nMiddle: Stop\nScroll: Volume"
+      tooltip="  Mode: $mode (Online/App)\n󰎆  Playing: $label\n󰑈  Player: $player ($status)\n\n  Mouse Controls:\n  • Left Click: Play/Pause\n  • Right Click: Cycle Player\n  • Middle Click: Stop All\n  • Scroll: Volume Up/Down\n\n󰒮 / 󰒭 Controls:\n  • Left Click: Prev/Next\n  • Right Click: Seek -/+"
       ;;
     *)
-      icon="󰐊"
+      alt="stopped"
       class="stopped"
-      label=""
-      tooltip="Mode: $mode\nNo active player\nLocal tracks: $total\n\nLeft: Start music\nRight: Shuffle queue\nMiddle: Stop"
+      label="No Music"
+      tooltip="  Mode: $mode\n󰎆  Status: No Active Player\n󰝚  Local Tracks: $total\n\n  Mouse Controls:\n  • Left Click: Start Local Music\n  • Right Click: Cycle Player\n  • Middle Click: Stop All\n  • Scroll: Volume Up/Down"
       ;;
   esac
 
-  # Output only icon - visualizer (cava) shows the animation
-  printf '{"text":"%s","tooltip":"%s","class":"%s"}\n' \
-    "$icon" "$tooltip" "$class"
+  # Hard truncate label for fixed-width display
+  display="$(trim_label "$label")"
+
+  printf '{"text":"%s","alt":"%s","tooltip":"%s","class":"%s"}\n' \
+    "$(json_escape "$display")" "$alt" "$(json_escape "$tooltip")" "$class"
 }
 
 get_prev_status() {
@@ -619,6 +757,10 @@ case "${1:-status}" in
     ;;
   vol-down|volume-down)
     volume_by down
+    ;;
+  _auto_next)
+    # Internal: called by the background watcher when mpv finishes naturally
+    do_auto_next
     ;;
   status)
     get_playpause_status
